@@ -9,6 +9,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Scrabble">
 <title>Scrabble Scorekeeper</title>
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <style>
 *,*::before,*::after{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
@@ -63,16 +67,8 @@ h1{margin:0;} p{margin:0;}
 .sc-chip-done{background:rgba(240,192,82,.16);color:#f0c052;}
 .sc-dot{width:7px;height:7px;border-radius:999px;display:inline-block;}
 
-.sc-felt{background:linear-gradient(180deg,#21503d,#1b4231);border:1px solid #143226;border-radius:14px;box-shadow:inset 0 2px 12px rgba(0,0,0,.35);}
-.sc-scell{border:0;cursor:pointer;height:40px;border-radius:7px;font-weight:800;font-size:16px;font-family:Georgia,serif;color:#3a2c18;background:linear-gradient(158deg,#f4e8ca,#e3d0a4);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.3);transition:transform .1s ease,box-shadow .15s;width:100%;}
-.sc-scell:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 4px 8px rgba(0,0,0,.4);}
-.sc-slot-current{border:2px dashed #f0c052;border-radius:7px;background:rgba(240,192,82,.08);animation:sc-pulse 1.7s ease-in-out infinite;cursor:pointer;}
-.sc-slot-empty{border:1px dashed #2f5847;border-radius:7px;background:rgba(255,255,255,.02);}
-.sc-total{height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-weight:800;font-size:16px;color:#2a1f0c;background:linear-gradient(180deg,#f4c95c,#e0ad3f);box-shadow:0 2px 6px rgba(224,173,63,.3);}
-
-.sc-stand{transition:border-color .3s ease;}
-.sc-leader{border-color:#caa23e !important;background:linear-gradient(180deg,#2e2616,#241d12);animation:sc-glow 2.6s ease-in-out infinite;}
-.sc-shine{position:absolute;top:0;left:0;height:100%;width:45%;pointer-events:none;border-radius:16px;background:linear-gradient(100deg,transparent,rgba(255,228,160,.16),transparent);transform:translateX(-160%);animation:sc-shimmer 3.4s ease-in-out infinite;}
+.sc-slot-current{border:2px dashed #f0c052;border-radius:9px;background:rgba(240,192,82,.08);animation:sc-pulse 1.7s ease-in-out infinite;cursor:pointer;}
+.sc-leader{border-color:#caa23e !important;background:linear-gradient(180deg,#2e2616,#241d12) !important;animation:sc-glow 2.6s ease-in-out infinite;}
 .sc-crown{animation:sc-crownbob 2.2s ease-in-out infinite;transform-origin:center;}
 .sc-winner{border-color:#caa23e !important;}
 .sc-popnum{animation:sc-pop .35s ease both;}
@@ -89,15 +85,35 @@ h1{margin:0;} p{margin:0;}
 @keyframes sc-pop{0%{transform:scale(.55);opacity:0;}60%{transform:scale(1.18);}100%{transform:scale(1);opacity:1;}}
 @keyframes sc-pulse{0%,100%{opacity:.55;}50%{opacity:1;}}
 @keyframes sc-glow{0%,100%{box-shadow:0 0 0 1px rgba(240,192,82,.45),0 0 16px rgba(240,192,82,.18);}50%{box-shadow:0 0 0 1px rgba(240,192,82,.8),0 0 30px rgba(240,192,82,.42);}}
-@keyframes sc-shimmer{0%{transform:translateX(-160%);}60%,100%{transform:translateX(260%);}}
 @keyframes sc-crownbob{0%,100%{transform:translateY(0) rotate(-5deg);}50%{transform:translateY(-3px) rotate(5deg);}}
 @keyframes sc-confetti{0%{transform:translateY(-14px) rotate(0);opacity:1;}100%{transform:translateY(220px) rotate(680deg);opacity:0;}}
 @keyframes sc-toastpop{0%{opacity:0;transform:translateX(-50%) translateY(-8px);}12%{opacity:1;transform:translateX(-50%) translateY(0);}86%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(-8px);}}
 
 @media (prefers-reduced-motion: reduce){
-  .sc-leader,.sc-shine,.sc-crown,.sc-cpiece,.sc-slot-current,.sc-popnum,.fadein{animation:none !important;}
+  .sc-leader,.sc-crown,.sc-cpiece,.sc-slot-current,.sc-popnum,.fadein{animation:none !important;}
   .sc-leader{box-shadow:0 0 0 1px rgba(240,192,82,.7);}
 }
+
+/* round-by-round scoreboard */
+.sb{padding:12px;}
+.sb-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.sb-grid{display:grid;gap:7px;min-width:100%;}
+.sb-head{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 7px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid #2c2419;text-align:center;}
+.sb-name{font-size:11.5px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sb-total{font-weight:800;font-size:22px;line-height:1;font-variant-numeric:tabular-nums;}
+.sb-crown{position:absolute;top:-10px;left:50%;transform:translateX(-50%);}
+.sb-entry{background:#1b1610;border:1px solid #33281d;border-radius:14px;padding:12px;margin:9px 0 3px;}
+.sb-entry-who{display:flex;align-items:center;gap:10px;}
+.sb-entry-lbl{font-size:12px;color:#8a7c69;font-weight:600;}
+.sb-entry-name{font-size:17px;font-weight:800;}
+.sb-hint{font-size:11.5px;color:#6f6354;margin-top:9px;}
+.sb-rlabel{display:flex;align-items:center;justify-content:center;color:#7a6e5c;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;}
+.sb-cell{display:flex;align-items:center;justify-content:center;height:42px;border-radius:9px;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums;}
+button.sb-cell{border:0;cursor:pointer;font-family:inherit;color:#f3e9d6;background:rgba(255,255,255,.05);transition:background .15s,transform .1s;}
+button.sb-cell:hover{background:rgba(255,255,255,.1);}
+button.sb-cell:active{transform:scale(.97);}
+.sb-cell-empty{color:#4a4236;}
+.sb-foot{font-size:12px;color:#6f6354;margin-top:10px;padding:0 2px;}
 </style>
 </head>
 <body>
@@ -143,14 +159,6 @@ h1{margin:0;} p{margin:0;}
   /* ---- derivations ---- */
   function totalsOf(g){var n=g.players.length,t=new Array(n).fill(0);g.scores.forEach(function(v,i){t[i%n]+=v;});return t;}
   function nextTurn(g){var n=g.players.length,idx=g.scores.length;return {idx:idx,player:idx%n,round:Math.floor(idx/n)};}
-  function standings(g){
-    var totals=totalsOf(g);
-    var arr=g.players.map(function(p,i){return {p:p,i:i,total:totals[i]};});
-    arr.sort(function(a,b){return b.total-a.total||a.i-b.i;});
-    var rank=0,prev=null;
-    arr.forEach(function(row,k){if(prev===null||row.total!==prev){rank=k+1;prev=row.total;}row.rank=rank;});
-    return arr;
-  }
   function leaderInfo(g){
     var totals=totalsOf(g),max=Math.max.apply(null,totals);
     var leaders=totals.map(function(t,i){return t===max?i:-1;}).filter(function(i){return i>=0;});
@@ -282,7 +290,7 @@ h1{margin:0;} p{margin:0;}
   function viewGame(){
     var g=currentGame();
     if(!g){state.view={name:'home',id:null};return viewHome();}
-    var n=g.players.length,totals=totalsOf(g),rows=standings(g),lead=leaderInfo(g),turn=nextTurn(g);
+    var n=g.players.length,totals=totalsOf(g),lead=leaderInfo(g),turn=nextTurn(g);
     var colors=g.players.map(function(_,i){return COLORS[i%COLORS.length];});
     var playedRounds=Math.ceil(g.scores.length/n);
     var displayRounds=g.finished?playedRounds:Math.ceil((g.scores.length+1)/n);
@@ -311,68 +319,62 @@ h1{margin:0;} p{margin:0;}
           +'<div style="font-size:20px;font-weight:800">'+winnerLine+'</div></div></div></div>';
     }
 
-    var stand='<div style="display:grid;gap:10px;margin-bottom:16px">';
-    rows.forEach(function(row){
-      var isLeader=lead.played&&row.total===lead.max;
-      var isTurn=!g.finished&&row.i===turn.player;
-      stand+='<div class="sc-card sc-stand '+(isLeader?'sc-leader':'')+'" style="padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative">'
-        +(isLeader?'<span class="sc-shine"></span>':'')
-        +'<div style="position:relative;width:26px;text-align:center;flex:none">'
-          +(isLeader?ic('crown',22,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'}):'<span style="font-weight:800;color:#6f6354;font-size:16px">'+row.rank+'</span>')
-        +'</div>'
-        +avatar(row.p.name,colors[row.i],36)
-        +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(row.p.name)+'</div>'
-          +(isTurn?'<div style="display:inline-flex;align-items:center;gap:5px;margin-top:2px;font-size:12px;font-weight:700;color:'+colors[row.i]+'"><span class="sc-dot" style="background:'+colors[row.i]+'"></span> to play</div>':'')
-        +'</div>'
-        +'<div class="sc-popnum" style="font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;color:'+(isLeader?'#f4d27a':'#f3e9d6')+'">'+row.total+'</div>'
+    // one grid shared by the totals header, the entry bar and the round rows
+    var cols='28px repeat('+n+',minmax(58px,1fr))';
+
+    var headCells='<div></div>';
+    g.players.forEach(function(p,i){
+      var isLead=lead.played&&totals[i]===lead.max;
+      headCells+='<div class="sb-head'+(isLead?' sc-leader':'')+'">'
+        +(isLead?'<span class="sb-crown">'+ic('crown',16,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'})+'</span>':'')
+        +avatar(p.name,colors[i],30)
+        +'<div class="sb-name" style="color:'+(isLead?'#f4d27a':'#e9dcc4')+'">'+esc(p.name)+'</div>'
+        +'<div class="sb-total sc-popnum" style="color:'+(isLead?'#f4d27a':'#f3e9d6')+'">'+totals[i]+'</div>'
       +'</div>';
     });
-    stand+='</div>';
 
-    var entry;
+    var entryInner;
     if(!g.finished){
-      entry='<div class="sc-panel" style="padding:14px;margin-bottom:16px">'
-        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+avatar(g.players[turn.player].name,colors[turn.player],34)
-          +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+(turn.round+1)+' · turn to score</div>'
-          +'<div style="font-size:17px;font-weight:800">'+esc(g.players[turn.player].name)+'</div></div></div>'
-        +'<div style="display:flex;gap:8px">'
+      entryInner='<div class="sb-entry-who">'+avatar(g.players[turn.player].name,colors[turn.player],30)
+        +'<div><div class="sb-entry-lbl">Round '+(turn.round+1)+' · now scoring</div>'
+        +'<div class="sb-entry-name">'+esc(g.players[turn.player].name)+'</div></div></div>'
+        +'<div style="display:flex;gap:8px;margin-top:10px">'
           +'<input id="scoreInput" class="sc-inp" type="number" inputmode="numeric" step="1" placeholder="Points this turn" style="flex:1;font-size:18px;font-weight:700">'
-          +'<button class="sc-btn sc-gold" style="padding:0 20px" data-action="score-add">'+ic('plus',18)+' Add</button>'
+          +'<button class="sc-btn sc-gold" style="padding:0 18px" data-action="score-add">'+ic('plus',18)+' Add</button>'
         +'</div>'
         +'<div style="display:flex;gap:8px;margin-top:8px">'
-          +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="score-pass">Pass / 0</button>'
-          +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="score-undo"'+(g.scores.length?'':' disabled')+'>'+ic('undo',16)+' Undo last</button>'
-        +'</div></div>';
+          +'<button class="sc-btn sc-soft sc-sm" style="flex:1;justify-content:center" data-action="score-pass">Pass / 0</button>'
+          +'<button class="sc-btn sc-soft sc-sm" style="flex:1;justify-content:center" data-action="score-undo"'+(g.scores.length?'':' disabled')+'>'+ic('undo',15)+' Undo last</button>'
+        +'</div>'
+        +'<div class="sb-hint">Last turn? Enter a negative number to subtract leftover tiles.</div>';
     } else {
-      entry='<div class="sc-panel" style="padding:14px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">'
+      entryInner='<div style="display:flex;gap:8px;flex-wrap:wrap">'
         +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="reopen-game">'+ic('rotate',16)+' Reopen game</button>'
         +'<button class="sc-btn sc-gold" style="flex:1;justify-content:center" data-action="new-game">'+ic('plus',17)+' New game</button></div>';
     }
 
-    var cells='<div></div>';
-    g.players.forEach(function(p,i){
-      cells+='<div style="text-align:center;padding-bottom:2px"><span class="sc-dot" style="background:'+colors[i]+';display:inline-block;margin-bottom:3px"></span><div style="font-size:11px;color:#cfe3d8;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div></div>';
-    });
-    for(var r=0;r<displayRounds;r++){
-      cells+='<div style="display:flex;align-items:center;justify-content:center;color:#9fc3b3;font-weight:700;font-size:13px">R'+(r+1)+'</div>';
+    var sheet='';
+    for(var r=displayRounds-1;r>=0;r--){
+      sheet+='<div class="sb-rlabel">R'+(r+1)+'</div>';
       for(var c=0;c<n;c++){
         var ti=r*n+c, filled=ti<g.scores.length, isCurrent=!g.finished&&ti===g.scores.length;
-        if(filled){cells+='<button class="sc-scell" data-action="edit-cell" data-ti="'+ti+'" title="Tap to edit">'+g.scores[ti]+'</button>';}
-        else if(isCurrent){cells+='<div class="sc-slot-current" style="height:40px" data-action="focus-entry" title="Current turn"></div>';}
-        else{cells+='<div class="sc-slot-empty" style="height:40px"></div>';}
+        if(filled){sheet+='<button class="sb-cell" data-action="edit-cell" data-ti="'+ti+'" title="Tap to edit">'+g.scores[ti]+'</button>';}
+        else if(isCurrent){sheet+='<div class="sb-cell sc-slot-current" data-action="focus-entry" title="Now scoring"></div>';}
+        else{sheet+='<div class="sb-cell sb-cell-empty">·</div>';}
       }
     }
-    cells+='<div style="display:flex;align-items:center;justify-content:center;color:#f0c052;font-weight:800;font-size:15px;margin-top:4px">&#931;</div>';
-    totals.forEach(function(t){cells+='<div class="sc-total" style="margin-top:4px">'+t+'</div>';});
 
-    var grid='<div style="margin-bottom:14px">'
-      +'<div style="display:flex;align-items:center;gap:6px;color:#8a7c69;font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 2px 8px">'+ic('hash',14)+' Round by round</div>'
-      +'<div class="sc-felt" style="padding:10px;overflow-x:auto"><div style="display:inline-grid;grid-template-columns:46px repeat('+n+',56px);gap:6px;min-width:100%">'+cells+'</div></div>'
-      +'<div style="font-size:12px;color:#6f6354;margin:8px 2px 0">Tap any score to fix it. End-of-game tile penalties? Enter a negative number.</div></div>';
+    var board='<div class="sc-panel sb"><div class="sb-scroll"><div class="sb-grid" style="grid-template-columns:'+cols+'">'
+      +headCells
+      +'<div class="sb-entry" style="grid-column:1 / -1">'+entryInner+'</div>'
+      +sheet
+      +'</div></div>'
+      +(g.finished?'':'<div class="sb-foot">Tap any score to fix it · new turns land at the top.</div>')
+    +'</div>';
 
-    var endBtn=(!g.finished)?'<button class="sc-btn sc-soft" style="width:100%;justify-content:center" data-action="end-game"'+(g.scores.length?'':' disabled')+'>'+ic('flag',16)+' End game &amp; crown the winner</button>':'';
+    var endBtn=(!g.finished)?'<button class="sc-btn sc-soft" style="width:100%;justify-content:center;margin-top:14px" data-action="end-game"'+(g.scores.length?'':' disabled')+'>'+ic('flag',16)+' End game &amp; crown the winner</button>':'';
 
-    return '<div class="wrap fadein">'+header+winner+stand+entry+grid+endBtn+'</div>';
+    return '<div class="wrap fadein">'+header+winner+board+endBtn+'</div>';
   }
 
   function renderModals(){
