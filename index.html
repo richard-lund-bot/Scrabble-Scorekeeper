@@ -101,7 +101,9 @@ h1{margin:0;} p{margin:0;}
 .sb-head{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 7px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid #2c2419;text-align:center;}
 .sb-name{font-size:11.5px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sb-total{font-weight:800;font-size:22px;line-height:1;font-variant-numeric:tabular-nums;}
-.sb-crown{position:absolute;top:-10px;left:50%;transform:translateX(-50%);}
+.sb-crownslot{height:15px;display:flex;align-items:center;justify-content:center;margin-bottom:1px;}
+.sb-head.sc-leader{animation:sb-leadpulse 2.6s ease-in-out infinite;}
+@keyframes sb-leadpulse{0%,100%{box-shadow:inset 0 0 0 1px rgba(202,162,62,.85),inset 0 0 12px rgba(240,192,82,.16);}50%{box-shadow:inset 0 0 0 1px rgba(240,192,82,1),inset 0 0 20px rgba(240,192,82,.34);}}
 .sb-entry{background:#1b1610;border:1px solid #33281d;border-radius:14px;padding:12px;margin:9px 0 3px;}
 .sb-entry-who{display:flex;align-items:center;gap:10px;}
 .sb-entry-lbl{font-size:12px;color:#8a7c69;font-weight:600;}
@@ -326,7 +328,7 @@ button.sb-cell:active{transform:scale(.97);}
     g.players.forEach(function(p,i){
       var isLead=lead.played&&totals[i]===lead.max;
       headCells+='<div class="sb-head'+(isLead?' sc-leader':'')+'">'
-        +(isLead?'<span class="sb-crown">'+ic('crown',16,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'})+'</span>':'')
+        +'<div class="sb-crownslot">'+(isLead?ic('crown',15,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'}):'')+'</div>'
         +avatar(p.name,colors[i],30)
         +'<div class="sb-name" style="color:'+(isLead?'#f4d27a':'#e9dcc4')+'">'+esc(p.name)+'</div>'
         +'<div class="sb-total sc-popnum" style="color:'+(isLead?'#f4d27a':'#f3e9d6')+'">'+totals[i]+'</div>'
@@ -339,14 +341,15 @@ button.sb-cell:active{transform:scale(.97);}
         +'<div><div class="sb-entry-lbl">Round '+(turn.round+1)+' · now scoring</div>'
         +'<div class="sb-entry-name">'+esc(g.players[turn.player].name)+'</div></div></div>'
         +'<div style="display:flex;gap:8px;margin-top:10px">'
-          +'<input id="scoreInput" class="sc-inp" type="number" inputmode="numeric" step="1" placeholder="Points this turn" style="flex:1;font-size:18px;font-weight:700">'
+          +'<button class="sc-btn sc-soft" style="padding:0 15px;font-size:20px;font-weight:800" data-action="score-negate" title="Make negative">±</button>'
+          +'<input id="scoreInput" class="sc-inp" type="text" inputmode="numeric" autocomplete="off" placeholder="Points this turn" style="flex:1;font-size:18px;font-weight:700;text-align:center">'
           +'<button class="sc-btn sc-gold" style="padding:0 18px" data-action="score-add">'+ic('plus',18)+' Add</button>'
         +'</div>'
         +'<div style="display:flex;gap:8px;margin-top:8px">'
           +'<button class="sc-btn sc-soft sc-sm" style="flex:1;justify-content:center" data-action="score-pass">Pass / 0</button>'
           +'<button class="sc-btn sc-soft sc-sm" style="flex:1;justify-content:center" data-action="score-undo"'+(g.scores.length?'':' disabled')+'>'+ic('undo',15)+' Undo last</button>'
         +'</div>'
-        +'<div class="sb-hint">Last turn? Enter a negative number to subtract leftover tiles.</div>';
+        +'<div class="sb-hint">Last turn? Tap ± to make the score negative for leftover tiles.</div>';
     } else {
       entryInner='<div style="display:flex;gap:8px;flex-wrap:wrap">'
         +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="reopen-game">'+ic('rotate',16)+' Reopen game</button>'
@@ -365,8 +368,8 @@ button.sb-cell:active{transform:scale(.97);}
     }
 
     var board='<div class="sc-panel sb"><div class="sb-scroll"><div class="sb-grid" style="grid-template-columns:'+cols+'">'
-      +headCells
       +'<div class="sb-entry" style="grid-column:1 / -1">'+entryInner+'</div>'
+      +headCells
       +sheet
       +'</div></div>'
       +(g.finished?'':'<div class="sb-foot">Tap any score to fix it · new turns land at the top.</div>')
@@ -412,7 +415,10 @@ button.sb-cell:active{transform:scale(.97);}
         html+='<div class="sc-overlay"><div class="sc-card" style="width:min(380px,92vw);padding:20px">'
           +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+avatar(pl.name,COLORS[(ti%n)%COLORS.length],34)
             +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+rd+'</div><div style="font-size:17px;font-weight:800">'+esc(pl.name)+'</div></div></div>'
-          +'<input id="editScoreInput" class="sc-inp" type="number" inputmode="numeric" step="1" value="'+val+'" style="font-size:18px;font-weight:700" onfocus="this.select()">'
+          +'<div style="display:flex;gap:8px">'
+            +'<button class="sc-btn sc-soft" style="padding:0 15px;font-size:20px;font-weight:800" data-action="editscore-negate" title="Make negative">±</button>'
+            +'<input id="editScoreInput" class="sc-inp" type="text" inputmode="numeric" autocomplete="off" value="'+val+'" style="flex:1;font-size:18px;font-weight:700;text-align:center" onfocus="this.select()">'
+          +'</div>'
           +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button class="sc-btn sc-ghost" data-action="editscore-cancel">Cancel</button><button class="sc-btn sc-gold" data-action="editscore-save">'+ic('check',17)+' Save</button></div>'
         +'</div></div>';
       }
@@ -479,6 +485,7 @@ button.sb-cell:active{transform:scale(.97);}
   function addScore(){var el=document.getElementById('scoreInput');if(!el)return;var v=parseInt(el.value,10);if(isNaN(v)){el.focus();return;}commitScore(v);}
   function undoLast(){var g=currentGame();if(g&&g.scores.length){g.scores.pop();g.updatedAt=Date.now();save();pendingFocusScore=true;render();}}
   function focusEntry(){var i=document.getElementById('scoreInput');if(i){i.focus();if(i.scrollIntoView)i.scrollIntoView({behavior:'smooth',block:'center'});}}
+  function negate(id){var el=document.getElementById(id);if(!el)return;var v=(el.value||'').trim();if(v===''||v==='-'){el.value='-';}else if(v.charAt(0)==='-'){el.value=v.slice(1);}else{el.value='-'+v;}el.focus();}
 
   function openEditScore(ti){state.editScore=ti;render();}
   function editScoreSave(){var el=document.getElementById('editScoreInput'),g=currentGame();if(el&&g&&state.editScore!==null){var v=parseInt(el.value,10);if(!isNaN(v)){g.scores[state.editScore]=v;g.updatedAt=Date.now();}}state.editScore=null;save();render();}
@@ -537,6 +544,7 @@ button.sb-cell:active{transform:scale(.97);}
       case 'score-add':addScore();break;
       case 'score-pass':commitScore(0);break;
       case 'score-undo':undoLast();break;
+      case 'score-negate':negate('scoreInput');break;
       case 'edit-cell':openEditScore(+el.getAttribute('data-ti'));break;
       case 'focus-entry':focusEntry();break;
       case 'end-game':confirmEnd();break;
@@ -547,6 +555,7 @@ button.sb-cell:active{transform:scale(.97);}
       case 'export-copy':exportCopy();break;
       case 'import-do':importDo();break;
       case 'editscore-save':editScoreSave();break;
+      case 'editscore-negate':negate('editScoreInput');break;
       case 'editscore-cancel':closeEditScore();break;
     }
   });
