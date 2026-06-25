@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scrabble Scorekeeper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="screen active">
+      <h1>Scrabble Scorekeeper</h1>
+      <div id="player-list"></div>
+      <div class="setup-controls">
+        <input id="player-name-input" type="text" placeholder="Player name" maxlength="20" />
+        <button id="add-player-btn" onclick="addPlayer()">Add Player</button>
+      </div>
+      <button id="start-btn" onclick="startGame()" disabled>Start Game</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="game-header">
+        <h1>Scrabble</h1>
+        <button class="end-game-btn" onclick="confirmEndGame()">End Game</button>
+      </div>
+
+      <div id="scoreboard"></div>
+
+      <div class="entry-panel">
+        <div class="entry-label">
+          <span id="active-player-name">Player</span> — Round <span id="current-round">1</span>
+        </div>
+        <div id="score-display" class="score-display">0</div>
+        <div class="numpad">
+          <button class="num-btn" onclick="numpadPress(7)">7</button>
+          <button class="num-btn" onclick="numpadPress(8)">8</button>
+          <button class="num-btn" onclick="numpadPress(9)">9</button>
+          <button class="num-btn" onclick="numpadPress(4)">4</button>
+          <button class="num-btn" onclick="numpadPress(5)">5</button>
+          <button class="num-btn" onclick="numpadPress(6)">6</button>
+          <button class="num-btn" onclick="numpadPress(1)">1</button>
+          <button class="num-btn" onclick="numpadPress(2)">2</button>
+          <button class="num-btn" onclick="numpadPress(3)">3</button>
+          <button class="num-btn action-btn clear-btn" onclick="numpadClear()">C</button>
+          <button class="num-btn" onclick="numpadPress(0)">0</button>
+          <button class="num-btn action-btn delete-btn" onclick="numpadDelete()">⌫</button>
+          <button class="num-btn confirm-btn" onclick="confirmScore()">✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen" class="screen">
+      <h1>Game Over!</h1>
+      <div id="final-scores"></div>
+      <button onclick="newGame()">New Game</button>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
