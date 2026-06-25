@@ -1,0 +1,387 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --card: #0f3460;
+  --accent: #e94560;
+  --accent2: #53d8fb;
+  --text: #eaeaea;
+  --text-muted: #8888aa;
+  --btn-radius: 12px;
+  --numpad-gap: 10px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+#app {
+  width: 100%;
+  max-width: 480px;
+  padding: 20px 16px 32px;
+  position: relative;
+}
+
+.screen {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.screen.active {
+  display: flex;
+}
+
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  color: var(--accent2);
+}
+
+/* ── Setup Screen ───────────────────────────── */
+
+#player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border-radius: var(--btn-radius);
+  padding: 10px 14px;
+  font-size: 1rem;
+}
+
+.player-item button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.setup-controls {
+  display: flex;
+  gap: 10px;
+}
+
+input[type="text"] {
+  flex: 1;
+  background: var(--surface);
+  border: 2px solid var(--card);
+  border-radius: var(--btn-radius);
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+  border-color: var(--accent2);
+}
+
+button {
+  background: var(--card);
+  color: var(--text);
+  border: none;
+  border-radius: var(--btn-radius);
+  padding: 10px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+button:hover {
+  background: #1a4a80;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#start-btn {
+  background: var(--accent);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 14px;
+}
+
+#start-btn:hover:not(:disabled) {
+  background: #ff6070;
+}
+
+/* ── Game Screen ────────────────────────────── */
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.game-header h1 {
+  text-align: left;
+  font-size: 1.4rem;
+}
+
+.end-game-btn {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  border-radius: var(--btn-radius);
+}
+
+.end-game-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Scoreboard */
+
+#scoreboard {
+  overflow-x: auto;
+  border-radius: var(--btn-radius);
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+th {
+  background: var(--card);
+  padding: 8px 10px;
+  text-align: center;
+  color: var(--accent2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+th:first-child {
+  text-align: left;
+  padding-left: 14px;
+}
+
+td {
+  padding: 7px 10px;
+  text-align: center;
+  border-bottom: 1px solid #1e2a4a;
+  color: var(--text);
+}
+
+td:first-child {
+  text-align: left;
+  padding-left: 14px;
+  font-weight: 500;
+}
+
+tr.active-row td {
+  background: rgba(83, 216, 251, 0.08);
+  color: var(--accent2);
+  font-weight: 600;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+.total-cell {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+tr.active-row .total-cell {
+  color: var(--accent2);
+}
+
+/* Entry panel */
+
+.entry-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.entry-label {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.entry-label span {
+  color: var(--accent2);
+  font-weight: 600;
+}
+
+.score-display {
+  background: var(--surface);
+  border: 2px solid var(--card);
+  border-radius: var(--btn-radius);
+  width: 100%;
+  max-width: 320px;
+  text-align: right;
+  padding: 12px 20px;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--accent2);
+  letter-spacing: 4px;
+  min-height: 68px;
+  transition: border-color 0.15s;
+}
+
+.score-display.has-value {
+  border-color: var(--accent2);
+}
+
+/* Numpad */
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--numpad-gap);
+  width: 100%;
+  max-width: 320px;
+}
+
+.num-btn {
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--card);
+  border-radius: var(--btn-radius);
+  font-size: 1.5rem;
+  font-weight: 600;
+  height: 68px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, transform 0.08s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.num-btn:hover {
+  background: var(--card);
+  border-color: var(--accent2);
+}
+
+.num-btn:active {
+  transform: scale(0.93);
+  background: #1a4a80;
+}
+
+.action-btn {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.clear-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.delete-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.confirm-btn {
+  grid-column: span 3;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-size: 1.6rem;
+  height: 60px;
+}
+
+.confirm-btn:hover {
+  background: #ff6070;
+  border-color: #ff6070;
+}
+
+.confirm-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── End Screen ─────────────────────────────── */
+
+#end-screen h1 {
+  color: var(--accent);
+  font-size: 2rem;
+}
+
+#final-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.final-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+  border-radius: var(--btn-radius);
+  padding: 12px 18px;
+  font-size: 1.1rem;
+}
+
+.final-row.winner {
+  background: var(--card);
+  border: 2px solid var(--accent2);
+}
+
+.final-row .rank {
+  font-size: 1.3rem;
+  width: 32px;
+}
+
+.final-row .name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.final-row .score {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.final-row.winner .score {
+  color: var(--accent2);
+}
+
+#end-screen button {
+  background: var(--accent);
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 14px;
+}
+
+#end-screen button:hover {
+  background: #ff6070;
+}

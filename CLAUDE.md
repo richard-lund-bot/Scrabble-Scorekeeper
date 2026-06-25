@@ -4,21 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Scrabble-Scorekeeper** is a scorekeeper application for the board game Scrabble. The repository is in its initial state — no language, framework, or tooling has been chosen yet.
+**Scrabble-Scorekeeper** is a scorekeeper application for the board game Scrabble. Built as a plain HTML/CSS/JS app — no build step, no dependencies.
 
-## Getting Started
+## Running the App
 
-When the project is bootstrapped, update this file with:
+Open `index.html` directly in a browser, or serve with any static file server:
 
-- Build, lint, and test commands
-- How to run a single test
-- Any environment setup required
+```
+npx serve .
+# or
+python3 -m http.server 8080
+```
 
-## Conventions to Establish
+## Files
 
-Once a stack is chosen, document here:
-
-- Language/runtime version requirements
-- Package manager and install command
-- Code style / formatter configuration
-- Test framework and coverage expectations
+- `index.html` — markup and screen layout
+- `style.css` — all styles
+- `app.js` — game logic, state, numpad handlers
