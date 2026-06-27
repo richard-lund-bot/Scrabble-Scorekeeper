@@ -64,8 +64,9 @@ h1{margin:0;} p{margin:0;}
 .sc-dot{width:7px;height:7px;border-radius:999px;display:inline-block;}
 
 .sc-felt{background:linear-gradient(180deg,#21503d,#1b4231);border:1px solid #143226;border-radius:14px;box-shadow:inset 0 2px 12px rgba(0,0,0,.35);}
-.sc-scell{border:0;cursor:pointer;height:40px;border-radius:7px;font-weight:800;font-size:16px;font-family:Georgia,serif;color:#3a2c18;background:linear-gradient(158deg,#f4e8ca,#e3d0a4);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.3);transition:transform .1s ease,box-shadow .15s;width:100%;}
+.sc-scell{border:0;cursor:pointer;height:40px;border-radius:7px;font-weight:800;font-size:16px;font-family:Georgia,serif;color:#3a2c18;background:linear-gradient(158deg,#f4e8ca,#e3d0a4);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.3);transition:transform .1s ease,box-shadow .15s,background .3s ease;width:100%;}
 .sc-scell:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 4px 8px rgba(0,0,0,.4);}
+.sc-scell.sc-cell-flash{background:linear-gradient(158deg,#a8e6aa,#7bc47f) !important;color:#15110c;transform:scale(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 4px 12px rgba(91,196,127,.55);}
 .sc-slot-current{border:2px dashed #f0c052;border-radius:7px;background:rgba(240,192,82,.08);animation:sc-pulse 1.7s ease-in-out infinite;cursor:pointer;}
 .sc-slot-empty{border:1px dashed #2f5847;border-radius:7px;background:rgba(255,255,255,.02);}
 .sc-total{height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-weight:800;font-size:16px;color:#2a1f0c;background:linear-gradient(180deg,#f4c95c,#e0ad3f);box-shadow:0 2px 6px rgba(224,173,63,.3);}
@@ -115,7 +116,7 @@ h1{margin:0;} p{margin:0;}
   "use strict";
   var KEY="scrabble:data:v1";
   var LETTER_VALUES={A:1,B:3,C:3,D:2,E:1,F:4,G:2,H:4,I:1,J:8,K:5,L:1,M:3,N:1,O:1,P:3,Q:10,R:1,S:1,T:1,U:1,V:4,W:4,X:8,Y:4,Z:10};
-  var VERSION='1.0';
+  var VERSION='1.2';
   var COLORS=["#5BA8C9","#E08A4B","#C76B98","#7BC47F","#B79CED","#A7C957","#5BC0BE","#E8775A"];
   var lblCss="display:block;font-size:13px;font-weight:700;color:#b7a892;margin:0 2px 8px";
 
@@ -189,15 +190,16 @@ h1{margin:0;} p{margin:0;}
 
   /* ---- state ---- */
   var state={games:[],view:{name:'home',id:null},setup:{name:'',players:[]},renaming:false,modal:null,backup:null,importErr:'',editScore:null,exportText:''};
-  var numInput='';   // current numpad entry
-  var prevPage='';   // tracks last rendered page to control fadein
+  var numInput='';      // current numpad entry (main game)
+  var editNumInput='';  // current numpad entry (edit modal)
+  var prevPage='';      // tracks last rendered page to control fadein
   var toastTimer=null;
   var app=document.getElementById('app');
   function currentGame(){for(var i=0;i<state.games.length;i++){if(state.games[i].id===state.view.id)return state.games[i];}return null;}
   function load(){try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(p&&Array.isArray(p.games))state.games=p.games;}}catch(e){}}
   function save(){try{localStorage.setItem(KEY,JSON.stringify({v:1,games:state.games}));}catch(e){}}
 
-  /* ---- numpad ---- */
+  /* ---- main numpad ---- */
   function updateDisplay(){
     var el=document.querySelector('.sc-np-display');
     if(!el)return;
@@ -205,6 +207,7 @@ h1{margin:0;} p{margin:0;}
     el.classList.toggle('sc-np-filled',!!numInput);
   }
   function npDigit(d){
+    if(navigator.vibrate)navigator.vibrate(8);
     var digits=numInput.replace('-','');
     if(digits.length>=4)return;
     if(!numInput&&d==='0')return;
@@ -221,6 +224,52 @@ h1{margin:0;} p{margin:0;}
     if(!digits)return;
     numInput=numInput[0]==='-'?digits:'-'+digits;
     updateDisplay();
+  }
+
+  /* ---- edit numpad ---- */
+  function updateEditDisplay(){
+    var el=document.getElementById('editNpDisplay');
+    if(!el)return;
+    el.textContent=editNumInput||'0';
+    el.classList.toggle('sc-np-filled',!!editNumInput);
+  }
+  function editNpDigit(d){
+    if(navigator.vibrate)navigator.vibrate(8);
+    var digits=editNumInput.replace('-','');
+    if(digits.length>=4)return;
+    if(!editNumInput&&d==='0')return;
+    editNumInput+=d;
+    updateEditDisplay();
+  }
+  function editNpDel(){
+    editNumInput=editNumInput.slice(0,-1);
+    if(editNumInput==='-')editNumInput='';
+    updateEditDisplay();
+  }
+  function editNpSign(){
+    var digits=editNumInput.replace('-','');
+    if(!digits)return;
+    editNumInput=editNumInput[0]==='-'?digits:'-'+digits;
+    updateEditDisplay();
+  }
+  function editNumpadHTML(){
+    return '<div class="sc-np-display'+(editNumInput?' sc-np-filled':'')+'" id="editNpDisplay">'+(editNumInput||'0')+'</div>'
+      +'<div class="sc-np" style="margin-bottom:4px">'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="1">1</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="2">2</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="3">3</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="4">4</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="5">5</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="6">6</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="7">7</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="8">8</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="9">9</button>'
+        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="0">0</button>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px;margin-top:8px">'
+        +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:17px" data-action="edit-np-del" title="Backspace">⌫</button>'
+        +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:16px;font-weight:800" data-action="edit-np-sign" title="Toggle negative">±</button>'
+      +'</div>';
   }
 
   /* ---- views ---- */
@@ -371,7 +420,8 @@ h1{margin:0;} p{margin:0;}
     rows.forEach(function(row){
       var isLeader=lead.played&&row.total===lead.max;
       var isTurn=!g.finished&&row.i===turn.player;
-      stand+='<div class="sc-card sc-stand '+(isLeader?'sc-leader':'')+'" style="padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative">'
+      var activeBorder=isTurn?';border-left:3px solid '+colors[row.i]:'';
+      stand+='<div class="sc-card sc-stand '+(isLeader?'sc-leader':'')+'" style="padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative'+activeBorder+'">'
         +(isLeader?'<span class="sc-shine"></span>':'')
         +'<div style="position:relative;width:26px;text-align:center;flex:none">'
           +(isLeader?ic('crown',22,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'}):'<span style="font-weight:800;color:#6f6354;font-size:16px">'+row.rank+'</span>')
@@ -385,9 +435,10 @@ h1{margin:0;} p{margin:0;}
     });
     stand+='</div>';
 
-    var entry;
+    var entry='';
     if(!g.finished){
-      entry='<div class="sc-panel" style="padding:14px;margin-bottom:16px">'
+      entry='<div style="position:fixed;bottom:0;left:0;right:0;z-index:10;background:#1a140e;border-top:1px solid #33281d;box-shadow:0 -6px 24px rgba(0,0,0,.6);padding:12px calc(16px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))">'
+        +'<div style="max-width:728px;margin:0 auto">'
         +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+avatar(g.players[turn.player].name,colors[turn.player],34)
           +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+(turn.round+1)+' · turn to score</div>'
           +'<div style="font-size:17px;font-weight:800">'+esc(g.players[turn.player].name)+'</div></div></div>'
@@ -398,6 +449,7 @@ h1{margin:0;} p{margin:0;}
           +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center;font-size:14px" data-action="score-pass">Pass / 0</button>'
           +'<button class="sc-btn sc-soft sc-sm" style="flex:none;justify-content:center" data-action="score-undo"'+(g.scores.length?'':' disabled')+' title="Undo last">'+ic('undo',16)+'</button>'
           +'<button class="sc-btn sc-gold" style="flex:none;padding:0 16px" data-action="score-add">'+ic('plus',17)+' Add</button>'
+        +'</div>'
         +'</div></div>';
     } else {
       entry='<div class="sc-panel" style="padding:14px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">'
@@ -428,7 +480,10 @@ h1{margin:0;} p{margin:0;}
 
     var endBtn=(!g.finished)?'<button class="sc-btn sc-soft" style="width:100%;justify-content:center" data-action="end-game"'+(g.scores.length?'':' disabled')+'>'+ic('flag',16)+' End game &amp; crown the winner</button>':'';
 
-    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+entry+grid+endBtn+'</div>';
+    // spacer so content isn't hidden under the fixed entry panel
+    var spacer=(!g.finished)?'<div style="height:230px"></div>':'';
+
+    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+grid+endBtn+spacer+'</div>'+entry;
   }
 
   function renderModals(){
@@ -462,11 +517,11 @@ h1{margin:0;} p{margin:0;}
     if(state.editScore!==null){
       var g=currentGame();
       if(g){
-        var ti=state.editScore,n=g.players.length,pl=g.players[ti%n],rd=Math.floor(ti/n)+1,val=g.scores[ti];
+        var ti=state.editScore,np=g.players.length,pl=g.players[ti%np],rd=Math.floor(ti/np)+1;
         html+='<div class="sc-overlay"><div class="sc-card" style="width:min(380px,92vw);padding:20px">'
-          +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+avatar(pl.name,COLORS[(ti%n)%COLORS.length],34)
-            +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+rd+'</div><div style="font-size:17px;font-weight:800">'+esc(pl.name)+'</div></div></div>'
-          +'<input id="editScoreInput" class="sc-inp" type="number" inputmode="numeric" step="1" value="'+val+'" style="font-size:18px;font-weight:700" onfocus="this.select()">'
+          +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+avatar(pl.name,COLORS[(ti%np)%COLORS.length],34)
+            +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+rd+' · edit score</div><div style="font-size:17px;font-weight:800">'+esc(pl.name)+'</div></div></div>'
+          +editNumpadHTML()
           +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button class="sc-btn sc-ghost" data-action="editscore-cancel">Cancel</button><button class="sc-btn sc-gold" data-action="editscore-save">'+ic('check',17)+' Save</button></div>'
         +'</div></div>';
       }
@@ -484,8 +539,7 @@ h1{margin:0;} p{margin:0;}
     else if(state.view.name==='game')screen=viewGame(fade);
     else screen=viewHome(fade);
     app.innerHTML=screen+renderModals();
-    if(state.editScore!==null){var i=document.getElementById('editScoreInput');if(i){i.focus();i.select();}}
-    else if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
+    if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
     if(state.backup==='export'){var t=document.getElementById('exportArea');if(t)t.value=state.exportText||'';}
   }
 
@@ -527,24 +581,62 @@ h1{margin:0;} p{margin:0;}
     var g=currentGame();if(!g||g.finished)return;
     var before=leaderInfo(g);
     g.scores.push(points);g.updatedAt=Date.now();
+    var justFilled=g.scores.length-1;
     numInput='';
+    var playerCount=g.players.length;
+    var roundDone=g.scores.length%playerCount===0;
+    var roundNum=Math.floor(g.scores.length/playerCount);
     var after=leaderInfo(g);
     save();render();
-    if(after.unique&&after.max>0&&after.index!==before.index){showToast(g.players[after.index].name+' takes the lead','lead');}
+    // Score cell flash
+    var cell=document.querySelector('[data-action="edit-cell"][data-ti="'+justFilled+'"]');
+    if(cell){
+      cell.classList.add('sc-cell-flash');
+      setTimeout(function(){if(cell)cell.classList.remove('sc-cell-flash');},450);
+    }
+    // Toasts
+    if(roundDone){
+      var msg='Round '+roundNum+' done · '+(after.unique?g.players[after.index].name+' leads with '+after.max:'Tied at '+after.max);
+      showToast(msg,'ok');
+    } else if(after.unique&&after.max>0&&after.index!==before.index){
+      showToast(g.players[after.index].name+' takes the lead','lead');
+    }
   }
-  function addScore(){var v=parseInt(numInput,10);if(isNaN(v))return;commitScore(v);}
-  function passScore(){numInput='';commitScore(0);}
+  function addScore(){
+    if(navigator.vibrate)navigator.vibrate(15);
+    var v=parseInt(numInput,10);if(isNaN(v))return;commitScore(v);
+  }
+  function passScore(){
+    if(navigator.vibrate)navigator.vibrate(15);
+    numInput='';commitScore(0);
+  }
   function undoLast(){var g=currentGame();if(g&&g.scores.length){g.scores.pop();g.updatedAt=Date.now();numInput='';save();render();}}
 
-  function openEditScore(ti){state.editScore=ti;render();}
-  function editScoreSave(){var el=document.getElementById('editScoreInput'),g=currentGame();if(el&&g&&state.editScore!==null){var v=parseInt(el.value,10);if(!isNaN(v)){g.scores[state.editScore]=v;g.updatedAt=Date.now();}}state.editScore=null;save();render();}
+  function openEditScore(ti){
+    var g=currentGame();
+    if(g&&g.scores[ti]!==undefined){
+      var v=g.scores[ti];
+      editNumInput=v===0?'':String(v);
+    } else {
+      editNumInput='';
+    }
+    state.editScore=ti;render();
+  }
+  function editScoreSave(){
+    var g=currentGame();
+    if(g&&state.editScore!==null){
+      var v=parseInt(editNumInput,10);
+      if(!isNaN(v)){g.scores[state.editScore]=v;g.updatedAt=Date.now();}
+    }
+    state.editScore=null;save();render();
+  }
   function closeEditScore(){state.editScore=null;render();}
 
   function confirmEnd(){state.modal={title:'End the game?',body:'Totals are locked in and a winner is crowned. You can reopen it later.',confirm:'End game',danger:false,onYes:endGame};render();}
   function endGame(){var g=currentGame();if(g){g.finished=true;g.updatedAt=Date.now();}state.modal=null;save();render();}
   function reopenGame(){var g=currentGame();if(g){g.finished=false;g.updatedAt=Date.now();}save();render();}
 
-  function confirmDelete(id,name){state.modal={title:'Delete this game?',body:'“'+name+'” and its scores will be removed for good.',confirm:'Delete',danger:true,onYes:function(){doDelete(id);}};render();}
+  function confirmDelete(id,name){state.modal={title:'Delete this game?',body:'"'+name+'" and its scores will be removed for good.',confirm:'Delete',danger:true,onYes:function(){doDelete(id);}};render();}
   function doDelete(id){state.games=state.games.filter(function(g){return g.id!==id;});if(state.view.id===id)state.view={name:'home',id:null};state.modal=null;save();render();}
   function closeModal(){state.modal=null;render();}
 
@@ -607,17 +699,23 @@ h1{margin:0;} p{margin:0;}
       case 'import-do':importDo();break;
       case 'editscore-save':editScoreSave();break;
       case 'editscore-cancel':closeEditScore();break;
+      case 'edit-np-digit':editNpDigit(el.getAttribute('data-d'));break;
+      case 'edit-np-del':editNpDel();break;
+      case 'edit-np-sign':editNpSign();break;
     }
   });
-  app.addEventListener('keydown',function(e){
+  document.addEventListener('keydown',function(e){
     if(state.renaming){
       var r=document.getElementById('renameInput');
       if(e.target===r){if(e.key==='Enter'){e.preventDefault();renameCommit();}else if(e.key==='Escape'){renameCancel();}}
       return;
     }
     if(state.editScore!==null){
-      var ed=document.getElementById('editScoreInput');
-      if(e.target===ed){if(e.key==='Enter'){e.preventDefault();editScoreSave();}else if(e.key==='Escape'){closeEditScore();}}
+      if(e.key>='0'&&e.key<='9'){e.preventDefault();editNpDigit(e.key);}
+      else if(e.key==='-'){e.preventDefault();editNpSign();}
+      else if(e.key==='Backspace'){e.preventDefault();editNpDel();}
+      else if(e.key==='Enter'){e.preventDefault();editScoreSave();}
+      else if(e.key==='Escape'){closeEditScore();}
       return;
     }
     if(state.view.name==='game'&&currentGame()&&!currentGame().finished){
