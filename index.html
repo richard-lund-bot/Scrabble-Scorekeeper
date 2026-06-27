@@ -417,20 +417,18 @@ h1{margin:0;} p{margin:0;}
     }
 
     var stand='<div style="display:grid;gap:10px;margin-bottom:16px">';
-    rows.forEach(function(row){
-      var isLeader=lead.played&&row.total===lead.max;
-      var isTurn=!g.finished&&row.i===turn.player;
-      var activeBorder=isTurn?';border-left:3px solid '+colors[row.i]:'';
+    g.players.forEach(function(p,i){
+      var isLeader=lead.played&&totals[i]===lead.max;
+      var isTurn=!g.finished&&i===turn.player;
+      var activeBorder=isTurn?';border-left:3px solid '+colors[i]:'';
       stand+='<div class="sc-card sc-stand '+(isLeader?'sc-leader':'')+'" style="padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative'+activeBorder+'">'
         +(isLeader?'<span class="sc-shine"></span>':'')
-        +'<div style="position:relative;width:26px;text-align:center;flex:none">'
-          +(isLeader?ic('crown',22,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'}):'<span style="font-weight:800;color:#6f6354;font-size:16px">'+row.rank+'</span>')
+        +(isLeader?'<div style="position:relative;width:26px;text-align:center;flex:none">'+ic('crown',22,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'})+'</div>':'')
+        +avatar(p.name,colors[i],36)
+        +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div>'
+          +(isTurn?'<div style="display:inline-flex;align-items:center;gap:5px;margin-top:2px;font-size:12px;font-weight:700;color:'+colors[i]+'"><span class="sc-dot" style="background:'+colors[i]+'"></span> to play</div>':'')
         +'</div>'
-        +avatar(row.p.name,colors[row.i],36)
-        +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(row.p.name)+'</div>'
-          +(isTurn?'<div style="display:inline-flex;align-items:center;gap:5px;margin-top:2px;font-size:12px;font-weight:700;color:'+colors[row.i]+'"><span class="sc-dot" style="background:'+colors[row.i]+'"></span> to play</div>':'')
-        +'</div>'
-        +'<div class="sc-popnum" style="font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;color:'+(isLeader?'#f4d27a':'#f3e9d6')+'">'+row.total+'</div>'
+        +'<div class="sc-popnum" style="font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;color:'+(isLeader?'#f4d27a':'#f3e9d6')+'">'+totals[i]+'</div>'
       +'</div>';
     });
     stand+='</div>';
