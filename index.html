@@ -115,6 +115,7 @@ h1{margin:0;} p{margin:0;}
   "use strict";
   var KEY="scrabble:data:v1";
   var LETTER_VALUES={A:1,B:3,C:3,D:2,E:1,F:4,G:2,H:4,I:1,J:8,K:5,L:1,M:3,N:1,O:1,P:3,Q:10,R:1,S:1,T:1,U:1,V:4,W:4,X:8,Y:4,Z:10};
+  var VERSION='1.0';
   var COLORS=["#5BA8C9","#E08A4B","#C76B98","#7BC47F","#B79CED","#A7C957","#5BC0BE","#E8775A"];
   var lblCss="display:block;font-size:13px;font-weight:700;color:#b7a892;margin:0 2px 8px";
 
@@ -257,7 +258,10 @@ h1{margin:0;} p{margin:0;}
     }
     return '<div class="wrap fadein">'
       +'<header style="margin-bottom:16px">'
-        +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">'+'SCRABBLE'.split('').map(function(c){return tile(c,34);}).join('')+'</div>'
+        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+          +'<div style="display:flex;gap:5px;flex-wrap:wrap">'+'SCRABBLE'.split('').map(function(c){return tile(c,34);}).join('')+'</div>'
+          +'<span class="sc-chip sc-chip-done" style="align-self:flex-start;margin-top:4px">v'+VERSION+'</span>'
+        +'</div>'
         +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">'
           +'<p style="color:#b7a892;font-size:15px;margin:0">Scorekeeper</p>'
           +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' New game</button>'
