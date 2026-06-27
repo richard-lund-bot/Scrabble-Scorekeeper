@@ -70,7 +70,7 @@ h1{margin:0;} p{margin:0;}
 .sc-slot-empty{border:1px dashed #2f5847;border-radius:7px;background:rgba(255,255,255,.02);}
 .sc-total{height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-weight:800;font-size:16px;color:#2a1f0c;background:linear-gradient(180deg,#f4c95c,#e0ad3f);box-shadow:0 2px 6px rgba(224,173,63,.3);}
 
-.sc-stand{transition:border-color .3s ease;}
+.sc-stand{transition:border-color .3s ease;overflow:hidden;}
 .sc-leader{border-color:#caa23e !important;background:linear-gradient(180deg,#2e2616,#241d12);animation:sc-glow 2.6s ease-in-out infinite;}
 .sc-shine{position:absolute;top:0;left:0;height:100%;width:45%;pointer-events:none;border-radius:16px;background:linear-gradient(100deg,transparent,rgba(255,228,160,.16),transparent);transform:translateX(-160%);animation:sc-shimmer 3.4s ease-in-out infinite;}
 .sc-crown{animation:sc-crownbob 2.2s ease-in-out infinite;transform-origin:center;}
@@ -196,8 +196,30 @@ h1{margin:0;} p{margin:0;}
   function save(){try{localStorage.setItem(KEY,JSON.stringify({v:1,games:state.games}));}catch(e){}}
 
   /* ---- numpad ---- */
-  function npDigit(d){if(numInput.length>=4)return;if(numInput===''&&d==='0')return;numInput+=d;render();}
-  function npDel(){numInput=numInput.slice(0,-1);render();}
+  function updateDisplay(){
+    var el=document.querySelector('.sc-np-display');
+    if(!el)return;
+    el.textContent=numInput||'0';
+    el.classList.toggle('sc-np-filled',!!numInput);
+  }
+  function npDigit(d){
+    var digits=numInput.replace('-','');
+    if(digits.length>=4)return;
+    if(!numInput&&d==='0')return;
+    numInput+=d;
+    updateDisplay();
+  }
+  function npDel(){
+    numInput=numInput.slice(0,-1);
+    if(numInput==='-')numInput='';
+    updateDisplay();
+  }
+  function npSign(){
+    var digits=numInput.replace('-','');
+    if(!digits)return;
+    numInput=numInput[0]==='-'?digits:'-'+digits;
+    updateDisplay();
+  }
 
   /* ---- views ---- */
   function gameCard(g){
@@ -365,11 +387,12 @@ h1{margin:0;} p{margin:0;}
           +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+(turn.round+1)+' · turn to score</div>'
           +'<div style="font-size:17px;font-weight:800">'+esc(g.players[turn.player].name)+'</div></div></div>'
         +numpadHTML()
-        +'<div style="display:flex;gap:8px;margin-top:8px">'
-          +'<button class="sc-btn sc-soft sc-sm" style="width:44px;padding:0;flex:none;justify-content:center;font-size:17px" data-action="np-del" title="Backspace">⌫</button>'
-          +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="score-pass">Pass / 0</button>'
+        +'<div style="display:flex;gap:6px;margin-top:8px">'
+          +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:17px" data-action="np-del" title="Backspace">⌫</button>'
+          +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:16px;font-weight:800" data-action="np-sign" title="Toggle negative">±</button>'
+          +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center;font-size:14px" data-action="score-pass">Pass / 0</button>'
           +'<button class="sc-btn sc-soft sc-sm" style="flex:none;justify-content:center" data-action="score-undo"'+(g.scores.length?'':' disabled')+' title="Undo last">'+ic('undo',16)+'</button>'
-          +'<button class="sc-btn sc-gold" style="flex:none;padding:0 18px" data-action="score-add">'+ic('plus',17)+' Add</button>'
+          +'<button class="sc-btn sc-gold" style="flex:none;padding:0 16px" data-action="score-add">'+ic('plus',17)+' Add</button>'
         +'</div></div>';
     } else {
       entry='<div class="sc-panel" style="padding:14px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">'
@@ -561,6 +584,7 @@ h1{margin:0;} p{margin:0;}
       case 'rename-cancel':renameCancel();break;
       case 'np-digit':npDigit(el.getAttribute('data-d'));break;
       case 'np-del':npDel();break;
+      case 'np-sign':npSign();break;
       case 'score-add':addScore();break;
       case 'score-pass':passScore();break;
       case 'score-undo':undoLast();break;
@@ -588,8 +612,9 @@ h1{margin:0;} p{margin:0;}
       if(e.target===ed){if(e.key==='Enter'){e.preventDefault();editScoreSave();}else if(e.key==='Escape'){closeEditScore();}}
       return;
     }
-    if(state.view.name==='game'&&!currentGame()?.finished){
+    if(state.view.name==='game'&&currentGame()&&!currentGame().finished){
       if(e.key>='0'&&e.key<='9'){npDigit(e.key);}
+      else if(e.key==='-'){npSign();}
       else if(e.key==='Backspace'){e.preventDefault();npDel();}
       else if(e.key==='Enter'){e.preventDefault();addScore();}
     }
