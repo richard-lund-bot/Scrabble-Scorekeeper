@@ -424,12 +424,14 @@ h1{margin:0;} p{margin:0;}
         ?';border:2px solid '+colors[i]+';background:linear-gradient(180deg,'+colors[i]+'22,'+colors[i]+'0a)'
         :'';
       stand+='<div class="sc-card sc-stand" style="padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative'+cardExtra+'">'
-        +(isLeader?'<div style="position:relative;width:26px;text-align:center;flex:none">'+ic('crown',22,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'})+'</div>':'')
         +avatar(p.name,colors[i],36)
         +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div>'
           +(isTurn?'<div style="display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:800;background:'+colors[i]+'33;color:'+colors[i]+';border:1px solid '+colors[i]+'66">'+ic('play',11,{fill:colors[i],stroke:'none'})+' Your turn</div>':'')
         +'</div>'
-        +'<div class="sc-popnum" style="font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;color:'+(isLeader?'#f4d27a':'#f3e9d6')+'">'+totals[i]+'</div>'
+        +'<div style="display:flex;align-items:center;gap:5px;flex:none">'
+          +(isLeader?ic('crown',18,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'}):'')
+          +'<div class="sc-popnum" style="font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;color:'+(isLeader?'#f4d27a':'#f3e9d6')+'">'+totals[i]+'</div>'
+        +'</div>'
       +'</div>';
     });
     stand+='</div>';
