@@ -190,6 +190,7 @@ h1{margin:0;} p{margin:0;}
   /* ---- state ---- */
   var state={games:[],view:{name:'home',id:null},setup:{name:'',players:[]},renaming:false,modal:null,backup:null,importErr:'',editScore:null,exportText:''};
   var numInput='';   // current numpad entry
+  var prevPage='';   // tracks last rendered page to control fadein
   var toastTimer=null;
   var app=document.getElementById('app');
   function currentGame(){for(var i=0;i<state.games.length;i++){if(state.games[i].id===state.view.id)return state.games[i];}return null;}
@@ -245,7 +246,7 @@ h1{margin:0;} p{margin:0;}
     +'</div>';
   }
 
-  function viewHome(){
+  function viewHome(fade){
     var games=state.games, list;
     if(games.length===0){
       list='<div class="sc-panel" style="padding:44px 24px;text-align:center">'
@@ -256,7 +257,7 @@ h1{margin:0;} p{margin:0;}
     } else {
       list='<div style="display:grid;gap:12px">'+games.map(gameCard).join('')+'</div>';
     }
-    return '<div class="wrap fadein">'
+    return '<div class="wrap'+(fade?' fadein':'')+'">'
       +'<header style="margin-bottom:16px">'
         +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
           +'<div style="display:flex;gap:5px;flex-wrap:wrap">'+'SCRABBLE'.split('').map(function(c){return tile(c,34);}).join('')+'</div>'
@@ -278,7 +279,7 @@ h1{margin:0;} p{margin:0;}
     +'</div>';
   }
 
-  function viewSetup(){
+  function viewSetup(fade){
     var players=state.setup.players;
     var first=((players[0]&&players[0].name)||'').trim()||'Player 1';
     var rows=players.map(function(p,i){
@@ -293,7 +294,7 @@ h1{margin:0;} p{margin:0;}
       +'</div>';
     }).join('');
     var ph=esc('Game · '+new Date().toLocaleDateString(undefined,{day:'numeric',month:'short'}));
-    return '<div class="wrap fadein">'
+    return '<div class="wrap'+(fade?' fadein':'')+'">'
       +'<button class="sc-btn sc-ghost" style="margin-left:-8px;margin-bottom:14px" data-action="setup-back">'+ic('arrowLeft',18)+' Back</button>'
       +'<h1 style="font-size:26px;font-weight:800;margin:0 0 18px">New game</h1>'
       +'<label style="'+lblCss+'">Game name <span style="color:#6f6354;font-weight:500">· optional</span></label>'
@@ -334,7 +335,7 @@ h1{margin:0;} p{margin:0;}
       +'</div>';
   }
 
-  function viewGame(){
+  function viewGame(fade){
     var g=currentGame();
     if(!g){state.view={name:'home',id:null};return viewHome();}
     var n=g.players.length,totals=totalsOf(g),rows=standings(g),lead=leaderInfo(g),turn=nextTurn(g);
@@ -427,7 +428,7 @@ h1{margin:0;} p{margin:0;}
 
     var endBtn=(!g.finished)?'<button class="sc-btn sc-soft" style="width:100%;justify-content:center" data-action="end-game"'+(g.scores.length?'':' disabled')+'>'+ic('flag',16)+' End game &amp; crown the winner</button>':'';
 
-    return '<div class="wrap fadein">'+header+winner+stand+entry+grid+endBtn+'</div>';
+    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+entry+grid+endBtn+'</div>';
   }
 
   function renderModals(){
@@ -475,10 +476,13 @@ h1{margin:0;} p{margin:0;}
 
   function render(){
     var screen;
-    if(state.view.name==='home')screen=viewHome();
-    else if(state.view.name==='setup')screen=viewSetup();
-    else if(state.view.name==='game')screen=viewGame();
-    else screen=viewHome();
+    var page=state.view.name+'|'+state.view.id;
+    var fade=page!==prevPage;
+    prevPage=page;
+    if(state.view.name==='home')screen=viewHome(fade);
+    else if(state.view.name==='setup')screen=viewSetup(fade);
+    else if(state.view.name==='game')screen=viewGame(fade);
+    else screen=viewHome(fade);
     app.innerHTML=screen+renderModals();
     if(state.editScore!==null){var i=document.getElementById('editScoreInput');if(i){i.focus();i.select();}}
     else if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
