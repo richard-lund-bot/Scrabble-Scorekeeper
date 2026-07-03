@@ -72,7 +72,6 @@ h1{margin:0;} p{margin:0;}
 .sc-slot-current{border:2px dashed #f0c052;border-radius:7px;background:rgba(240,192,82,.08);animation:sc-pulse 1.7s ease-in-out infinite;cursor:pointer;}
 .sc-slot-empty{border:1px dashed #2f5847;border-radius:7px;background:rgba(255,255,255,.02);}
 .sc-total{height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-weight:800;font-size:16px;color:#2a1f0c;background:linear-gradient(180deg,#f4c95c,#e0ad3f);box-shadow:0 2px 6px rgba(224,173,63,.3);}
-.sc-scell-hidden{background:linear-gradient(158deg,#d9cdb4,#c8b892);color:#8a7c62;}
 .sc-total-hidden{background:linear-gradient(180deg,#7c6a45,#6a5a39);color:#c9b78c;box-shadow:none;}
 
 .sc-stand{transition:border-color .3s ease;overflow:hidden;}
@@ -483,7 +482,7 @@ h1{margin:0;} p{margin:0;}
       cells+='<div style="display:flex;align-items:center;justify-content:center;color:#9fc3b3;font-weight:700;font-size:13px">R'+(r+1)+'</div>';
       for(var c=0;c<n;c++){
         var ti=r*n+c, filled=ti<g.scores.length, isCurrent=!g.finished&&ti===g.scores.length;
-        if(filled){cells+='<button class="sc-scell'+(hide?' sc-scell-hidden':'')+'" data-action="edit-cell" data-ti="'+ti+'" title="Tap to edit">'+(hide?'•':g.scores[ti])+'</button>';}
+        if(filled){cells+='<button class="sc-scell" data-action="edit-cell" data-ti="'+ti+'" title="Tap to edit">'+g.scores[ti]+'</button>';}
         else if(isCurrent){cells+='<div class="sc-slot-current" style="height:40px" data-action="focus-entry" title="Current turn"></div>';}
         else{cells+='<div class="sc-slot-empty" style="height:40px"></div>';}
       }
