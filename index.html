@@ -495030,7 +495030,7 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
   // Norwegian Scrabble tile values — used only by the word helper. Rare letters
   // C/Q/W/X/Z have no standard Norwegian tile; scored high as in Wordfeud/ordspill.
   var NOR_VALUES={A:1,B:4,C:10,D:1,E:1,F:2,G:2,H:3,I:1,J:4,K:2,L:1,M:2,N:1,O:2,P:4,Q:10,R:1,S:1,T:1,U:4,V:4,W:8,X:10,Y:6,Z:10,'Æ':6,'Ø':5,'Å':4};
-  var VERSION='1.4.1';
+  var VERSION='1.5.0';
   var COLORS=["#5BA8C9","#E08A4B","#C76B98","#7BC47F","#B79CED","#A7C957","#5BC0BE","#E8775A"];
   var lblCss="display:block;font-size:13px;font-weight:700;color:#b7a892;margin:0 2px 8px";
 
@@ -495176,9 +495176,62 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
     render();
   }
 
+  /* ---- validation + external lookups ---- */
+  var ORDSET=null;
+  function buildSet(){if(ORDSET)return true;if(!decodeOrdbok())return false;ORDSET={};for(var i=0;i<ORDBOK.length;i++)ORDSET[ORDBOK[i]]=1;return true;}
+  function isValid(w){if(!buildSet())return null;return !!ORDSET[w];}
+  function naobUrl(w){return 'https://naob.no/ordbok/'+encodeURIComponent(String(w).toLowerCase());}
+  function synUrl(w){return 'https://www.synonymordboka.no/no/?q='+encodeURIComponent(String(w).toLowerCase());}
+  function obUrl(w){return 'https://ordbokene.no/nob/bm/'+encodeURIComponent(String(w).toLowerCase());}
+
+  /* ---- in-game word lookup ---- */
+  function captureLookup(){var e=document.getElementById('lookupInput');if(e)state.lookup.word=e.value;}
+  function doLookup(){
+    captureLookup();
+    var raw=(state.lookup.word||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');
+    if(!raw){state.lookup.result=null;render();return;}
+    state.lookup.result={word:raw,valid:isValid(raw)};
+    render();
+  }
+  function toggleLookup(){captureLookup();state.lookup.open=!state.lookup.open;render();}
+
+  /* ---- crossword engine ---- */
+  function captureKryss(){
+    var k=state.kryss,e;
+    if((e=document.getElementById('kryssPattern')))k.pattern=e.value;
+    if((e=document.getElementById('kryssLen')))k.len=e.value;
+    if((e=document.getElementById('kryssContains')))k.contains=e.value;
+    if((e=document.getElementById('kryssClue')))k.clue=e.value;
+  }
+  function kryssSearch(){
+    captureKryss();
+    var k=state.kryss;k.error='';k.searched=true;
+    if(!decodeOrdbok()){k.error='Ordlisten er ikke lastet ennå.';k.results=null;render();return;}
+    var pat=(k.pattern||'').toUpperCase().replace(/[\s*?_.]/g,'.').replace(/[^A-ZÆØÅ.]/g,'');
+    var contains=(k.contains||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');
+    var lenNum=parseInt(k.len,10);if(isNaN(lenNum)||lenNum<0)lenNum=0;
+    var hasPat=pat.length>0;
+    if(!hasPat&&!contains&&!lenNum){k.error='Skriv et mønster (f.eks. K_YSS_RD), en lengde, eller «inneholder».';k.results=null;render();return;}
+    var patRe=hasPat?new RegExp('^'+pat+'$'):null;
+    var out=[],CAP=400;
+    function consider(w){
+      if(patRe&&!patRe.test(w))return;
+      if(contains&&w.indexOf(contains)<0)return;
+      out.push(w);
+    }
+    var targetLen=hasPat?pat.length:lenNum;
+    if(targetLen){var b=ORD_BY_LEN[targetLen];if(b)for(var i=0;i<b.length;i++)consider(b[i]);}
+    else {for(var j=0;j<ORDBOK.length;j++)consider(ORDBOK[j]);}
+    out.sort(function(a,b){return a.length-b.length||(a<b?-1:1);});
+    k.total=out.length;k.truncated=out.length>CAP?out.length-CAP:0;k.results=out.slice(0,CAP);
+    render();
+  }
+
   /* ---- state ---- */
   var state={games:[],view:{name:'home',id:null},setup:{name:'',players:[]},renaming:false,modal:null,backup:null,importErr:'',editScore:null,exportText:'',
-    helper:{rack:'',starts:'',ends:'',contains:'',pattern:'',useAll:false,adv:false,results:null,searched:false,error:'',total:0,truncated:0}};
+    helper:{rack:'',starts:'',ends:'',contains:'',pattern:'',useAll:false,adv:false,results:null,searched:false,error:'',total:0,truncated:0},
+    lookup:{word:'',result:null,open:false},
+    kryss:{pattern:'',len:'',contains:'',clue:'',results:null,searched:false,error:'',total:0,truncated:0,adv:false}};
   var numInput='';      // current numpad entry (main game)
   var editNumInput='';  // current numpad entry (edit modal)
   var prevPage='';      // tracks last rendered page to control fadein
@@ -495308,6 +495361,7 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
           +'<p style="color:#b7a892;font-size:15px;margin:0">Scorekeeper</p>'
           +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
             +'<button class="sc-btn sc-soft" data-action="open-helper">'+ic('hash',18)+' Ordhjelper</button>'
+            +'<button class="sc-btn sc-soft" data-action="open-kryss">'+ic('hash',18)+' Kryssord</button>'
             +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' New game</button>'
           +'</div>'
         +'</div>'
@@ -495483,10 +495537,37 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
 
     var endBtn=(!g.finished)?'<button class="sc-btn sc-soft" style="width:100%;justify-content:center" data-action="end-game"'+(g.scores.length?'':' disabled')+'>'+ic('flag',16)+' End game &amp; crown the winner</button>':'';
 
+    // in-game word lookup (validity + NAOB)
+    var lu=state.lookup,luRes='';
+    if(lu.result){
+      var ok=lu.result.valid;
+      luRes='<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+        +'<span style="font-weight:800;font-size:16px;letter-spacing:1px">'+esc(lu.result.word)+'</span>'
+        +(ok===null?'<span style="color:#8a7c69;font-size:13px">Ordlisten laster…</span>'
+          : ok?'<span class="sc-chip" style="background:rgba(123,196,127,.16);color:#8fd28f">'+ic('check',13,{stroke:'#8fd28f'})+' Gyldig ord</span>'
+              :'<span class="sc-chip" style="background:rgba(230,145,127,.16);color:#e6917f">'+ic('x',13,{stroke:'#e6917f'})+' Ikke i ordlista</span>')
+        +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+naobUrl(lu.result.word)+'" target="_blank" rel="noopener">Se i NAOB ↗</a>'
+      +'</div>';
+    }
+    var lookupPanel='<div class="sc-panel" style="padding:12px 14px;margin-bottom:14px">'
+      +'<button class="sc-titlebtn" data-action="lookup-toggle" style="width:100%" aria-expanded="'+(lu.open?'true':'false')+'">'
+        +ic('hash',15,{stroke:'#8a7c69'})
+        +'<span style="font-weight:700;font-size:14px;flex:1">Slå opp ord · NAOB</span>'
+        +ic(lu.open?'chevUp':'chevDown',16,{stroke:'#8a7c69'})
+      +'</button>'
+      +(lu.open?('<div style="margin-top:10px">'
+        +'<div style="display:flex;gap:8px">'
+          +'<input class="sc-inp" id="lookupInput" value="'+esc(lu.word||'')+'" placeholder="Skriv et ord…" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;text-transform:uppercase">'
+          +'<button class="sc-btn sc-gold" data-action="lookup-do">'+ic('check',16)+' Sjekk</button>'
+        +'</div>'+luRes
+        +'<div style="font-size:11.5px;color:#6f6354;margin-top:8px">Sjekker mot norsk bokmål-ordliste (494 902 ord). «Se i NAOB» åpner betydningen i ny fane.</div>'
+      +'</div>'):'')
+    +'</div>';
+
     // spacer so content isn't hidden under the fixed entry panel
     var spacer=(!g.finished)?'<div style="height:230px"></div>':'';
 
-    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+grid+endBtn+spacer+'</div>'+entry;
+    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+lookupPanel+grid+endBtn+spacer+'</div>'+entry;
   }
 
   function helperResultRow(r){
@@ -495557,6 +495638,74 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
     +'</div>';
   }
 
+  function kryssRow(w){
+    return '<div class="sc-card" style="padding:9px 12px;display:flex;align-items:center;gap:10px">'
+      +'<span style="flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;letter-spacing:2px;color:#f3e9d6;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(w)+'</span>'
+      +'<span style="font-size:11px;color:#6f6354;flex:none">'+w.length+'</span>'
+      +'<a class="sc-btn sc-ghost sc-sm" style="text-decoration:none;flex:none" href="'+naobUrl(w)+'" target="_blank" rel="noopener" title="Slå opp i NAOB">NAOB ↗</a>'
+    +'</div>';
+  }
+  function viewKryss(fade){
+    var k=state.kryss;
+    var ready=ordbokReady();
+    var results='';
+    if(k.error){
+      results='<div class="sc-panel" style="padding:16px;color:#e6917f;font-size:14px">'+esc(k.error)+'</div>';
+    } else if(k.searched&&k.results){
+      if(k.results.length===0){
+        results='<div class="sc-panel" style="padding:30px 20px;text-align:center;color:#8a7c69">'
+          +'<div style="font-weight:700;font-size:16px;margin-bottom:4px;color:#cbbba2">Ingen treff</div>'
+          +'Ingen ord passer mønsteret. Sjekk lengden og de kjente bokstavene.</div>';
+      } else {
+        var head='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px">'
+          +'<div style="font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a7c69;display:flex;align-items:center;gap:6px">'+ic('check',14,{stroke:'#7BC47F'})+k.total+' treff</div>'
+          +(k.truncated?'<div style="font-size:12px;color:#6f6354">viser '+k.results.length+'</div>':'')
+        +'</div>';
+        results=head+'<div style="display:grid;gap:7px">'+k.results.map(kryssRow).join('')+'</div>'
+          +(k.truncated?'<div style="text-align:center;font-size:12px;color:#6f6354;margin-top:12px">+ '+k.truncated+' flere treff skjult · legg til flere kjente bokstaver</div>':'');
+      }
+    } else {
+      results='<div class="sc-panel" style="padding:26px 20px;text-align:center;color:#8a7c69">'
+        +'<div style="display:flex;gap:4px;justify-content:center;margin-bottom:14px;opacity:.9">'+'K_YSS'.split('').map(function(c){return c==='_'?'<div class="sc-slot-empty" style="width:34px;height:34px"></div>':tile(c,34,NOR_VALUES);}).join('')+'</div>'
+        +'<div style="font-weight:700;font-size:16px;margin-bottom:6px;color:#cbbba2">Finn løsningsordet</div>'
+        +'Skriv inn det du vet: lengden og bokstavene på plass. Bruk _ for ukjente ruter, f.eks. <b>K_YSS_RD</b>.</div>';
+    }
+    var clue=(k.clue||'').trim();
+    var synLinks='';
+    if(k.adv){
+      synLinks='<div style="display:grid;gap:10px;margin-top:12px">'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+          +'<div><label style="'+lblCss+';margin-bottom:5px">Antall bokstaver</label><input class="sc-inp" id="kryssLen" value="'+esc(k.len||'')+'" placeholder="f.eks. 8" inputmode="numeric" autocomplete="off"></div>'
+          +'<div><label style="'+lblCss+';margin-bottom:5px">Inneholder</label><input class="sc-inp" id="kryssContains" value="'+esc(k.contains||'')+'" placeholder="f.eks. SS" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>'
+        +'</div>'
+        +'<div><label style="'+lblCss+';margin-bottom:5px">Ledetråd / synonym <span style="color:#6f6354;font-weight:500">· åpner ekstern synonymordbok</span></label>'
+          +'<input class="sc-inp" id="kryssClue" value="'+esc(k.clue||'')+'" placeholder="f.eks. glad" autocomplete="off" spellcheck="false">'
+          +(clue?('<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'
+             +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+synUrl(clue)+'" target="_blank" rel="noopener">Synonymordboka ↗</a>'
+             +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+obUrl(clue)+'" target="_blank" rel="noopener">Ordbøkene ↗</a>'
+             +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+naobUrl(clue)+'" target="_blank" rel="noopener">NAOB ↗</a>'
+           +'</div>'):'<div style="font-size:11.5px;color:#6f6354;margin-top:6px">Skriv en ledetråd og trykk «Søk» for å få synonymlenker.</div>')
+        +'</div>'
+      +'</div>';
+    }
+    return '<div class="wrap'+(fade?' fadein':'')+'">'
+      +'<button class="sc-btn sc-ghost" style="margin-left:-8px;margin-bottom:14px" data-action="kryss-back">'+ic('arrowLeft',18)+' Tilbake</button>'
+      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 4px">Kryssordbok</h1>'
+      +'<p style="color:#8a7c69;font-size:14px;margin:0 0 20px">Norsk bokmål · '+(ready?(window.SCRABBLE_ORDBOK.n||'').toLocaleString('no'):'—')+' ord</p>'
+      +'<div class="sc-card" style="padding:16px">'
+        +'<label style="'+lblCss+'">Mønster <span style="color:#6f6354;font-weight:500">· _ for ukjent rute</span></label>'
+        +'<input class="sc-inp" id="kryssPattern" value="'+esc(k.pattern||'')+'" placeholder="K_YSS_RD" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-size:20px;letter-spacing:4px;text-transform:uppercase">'
+        +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
+          +'<button class="sc-btn sc-gold" data-action="kryss-search" style="flex:1;min-width:130px;justify-content:center">'+ic('check',17)+' Søk</button>'
+          +'<button class="sc-btn sc-ghost sc-sm" data-action="kryss-toggle-adv" aria-pressed="'+(k.adv?'true':'false')+'">'+ic(k.adv?'chevUp':'chevDown',15)+' Lengde · ledetråd</button>'
+        +'</div>'
+        +synLinks
+      +'</div>'
+      +'<div style="margin-top:18px">'+results+'</div>'
+      +'<div style="font-size:11.5px;color:#6f6354;margin:16px 2px 0;line-height:1.5">Mønster-søk bruker Norsk Ordbank (494 902 bokmålsord, CC-BY 4.0). Synonym-søk på ledetråd åpner eksterne synonymordbøker i ny fane (vi kan ikke lovlig bygge inn en synonymdatabase ennå).</div>'
+    +'</div>';
+  }
+
   function renderModals(){
     var html='';
     if(state.modal){
@@ -495609,10 +495758,12 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
     else if(state.view.name==='setup')screen=viewSetup(fade);
     else if(state.view.name==='game')screen=viewGame(fade);
     else if(state.view.name==='helper')screen=viewHelper(fade);
+    else if(state.view.name==='kryss')screen=viewKryss(fade);
     else screen=viewHome(fade);
     app.innerHTML=screen+renderModals();
     if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
     if(state.view.name==='helper'&&!state.helper.searched){var rk=document.getElementById('helpRack');if(rk)rk.focus();}
+    if(state.view.name==='kryss'&&!state.kryss.searched){var kp=document.getElementById('kryssPattern');if(kp)kp.focus();}
     if(state.backup==='export'){var t=document.getElementById('exportArea');if(t)t.value=state.exportText||'';}
   }
 
@@ -495632,6 +495783,9 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
   function openHelper(){state.view={name:'helper',id:null};render();}
   function helperToggleAll(){captureHelper();state.helper.useAll=!state.helper.useAll;if(state.helper.searched)helperSearch();else render();}
   function helperToggleAdv(){captureHelper();state.helper.adv=!state.helper.adv;render();}
+  function openKryss(){state.view={name:'kryss',id:null};render();}
+  function kryssBack(){captureKryss();goHome();}
+  function kryssToggleAdv(){captureKryss();state.kryss.adv=!state.kryss.adv;render();}
 
   function captureSetup(){
     var nm=document.getElementById('setupNameInput');if(nm)state.setup.name=nm.value;
@@ -495754,6 +495908,12 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
       case 'helper-search':helperSearch();break;
       case 'helper-toggle-all':helperToggleAll();break;
       case 'helper-toggle-adv':helperToggleAdv();break;
+      case 'open-kryss':openKryss();break;
+      case 'kryss-back':kryssBack();break;
+      case 'kryss-search':kryssSearch();break;
+      case 'kryss-toggle-adv':kryssToggleAdv();break;
+      case 'lookup-toggle':toggleLookup();break;
+      case 'lookup-do':doLookup();break;
       case 'open-game':openGame(el.getAttribute('data-id'));break;
       case 'export-open':openExport();break;
       case 'import-open':openImport();break;
@@ -495808,7 +495968,17 @@ window.SCRABBLE_ORDBOK={v:"nob-2022-02-01",src:"Norsk Ordbank (Spr\u00e5kbanken/
       if(e.key==='Enter'){e.preventDefault();helperSearch();}
       return;
     }
+    if(state.view.name==='kryss'){
+      if(e.key==='Enter'){e.preventDefault();kryssSearch();}
+      return;
+    }
     if(state.view.name==='game'&&currentGame()&&!currentGame().finished){
+      // don't let the numpad hijack keys while typing in a text field (e.g. word lookup)
+      var t=e.target,tag=t&&t.tagName;
+      if(tag==='INPUT'||tag==='TEXTAREA'){
+        if(t.id==='lookupInput'&&e.key==='Enter'){e.preventDefault();doLookup();}
+        return;
+      }
       if(e.key>='0'&&e.key<='9'){npDigit(e.key);}
       else if(e.key==='-'){npSign();}
       else if(e.key==='Backspace'){e.preventDefault();npDel();}
