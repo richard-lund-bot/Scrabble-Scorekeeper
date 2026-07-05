@@ -118,12 +118,16 @@ h1{margin:0;} p{margin:0;}
 </head>
 <body>
 <div id="app" class="sc-root"></div>
+<script src="ordbok.js"></script>
 <script>
 (function(){
   "use strict";
   var KEY="scrabble:data:v1";
   var LETTER_VALUES={A:1,B:3,C:3,D:2,E:1,F:4,G:2,H:4,I:1,J:8,K:5,L:1,M:3,N:1,O:1,P:3,Q:10,R:1,S:1,T:1,U:1,V:4,W:4,X:8,Y:4,Z:10};
-  var VERSION='1.3.4';
+  // Norwegian Scrabble tile values — used only by the word helper. Rare letters
+  // C/Q/W/X/Z have no standard Norwegian tile; scored high as in Wordfeud/ordspill.
+  var NOR_VALUES={A:1,B:4,C:10,D:1,E:1,F:2,G:2,H:3,I:1,J:4,K:2,L:1,M:2,N:1,O:2,P:4,Q:10,R:1,S:1,T:1,U:4,V:4,W:8,X:10,Y:6,Z:10,'Æ':6,'Ø':5,'Å':4};
+  var VERSION='1.4.0';
   var COLORS=["#5BA8C9","#E08A4B","#C76B98","#7BC47F","#B79CED","#A7C957","#5BC0BE","#E8775A"];
   var lblCss="display:block;font-size:13px;font-weight:700;color:#b7a892;margin:0 2px 8px";
 
@@ -187,9 +191,9 @@ h1{margin:0;} p{margin:0;}
   }
 
   /* ---- tiles ---- */
-  function tile(ch,size){
+  function tile(ch,size,vals){
     var c=String(ch==null?'':ch).toUpperCase().slice(0,1)||'?';
-    var v=LETTER_VALUES[c];
+    var v=(vals||LETTER_VALUES)[c];
     return '<div class="sc-tile" style="width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*0.5)+'px"><span>'+esc(c)+'</span>'+(v!=null?'<sub class="sc-tile-val" style="font-size:'+Math.round(size*0.27)+'px">'+v+'</sub>':'')+'</div>';
   }
   function avatar(name,color,size){
@@ -197,8 +201,81 @@ h1{margin:0;} p{margin:0;}
     return '<div style="padding:2px;border-radius:'+Math.round(size*0.26)+'px;background:'+color+';display:inline-flex;flex:none">'+tile(ch,size)+'</div>';
   }
 
+  /* ---- word helper engine ---- */
+  var ORDBOK=null, ORD_BY_LEN=null;            // decoded lazily on first use
+  function ordbokReady(){return !!(window.SCRABBLE_ORDBOK&&window.SCRABBLE_ORDBOK.fc);}
+  function decodeOrdbok(){
+    if(ORDBOK)return true;
+    if(!ordbokReady())return false;
+    var lines=window.SCRABBLE_ORDBOK.fc.split("\n"),prev="",arr=new Array(lines.length),byLen={};
+    for(var i=0;i<lines.length;i++){
+      var ln=lines[i],k=ln.charCodeAt(0)-48,w=prev.slice(0,k)+ln.slice(1);
+      arr[i]=w;prev=w;
+      (byLen[w.length]||(byLen[w.length]=[])).push(w);
+    }
+    ORDBOK=arr;ORD_BY_LEN=byLen;return true;
+  }
+  function countLetters(s){var m={};for(var i=0;i<s.length;i++){var c=s[i];m[c]=(m[c]||0)+1;}return m;}
+  function wordScore(w,vals){var s=0;for(var i=0;i<w.length;i++)s+=vals[w[i]]||0;return s;}
+  // Points if built from a rack: letters covered by a blank score 0.
+  function scoreOnRack(w,have,vals){
+    var need=countLetters(w),blanks=0,score=wordScore(w,vals),c;
+    for(c in need){if(need.hasOwnProperty(c)){var sh=need[c]-(have[c]||0);if(sh>0){blanks+=sh;score-=sh*(vals[c]||0);}}}
+    return {blanks:blanks,score:score};
+  }
+  function captureHelper(){
+    var h=state.helper,e;
+    if((e=document.getElementById('helpRack')))h.rack=e.value;
+    if((e=document.getElementById('helpStarts')))h.starts=e.value;
+    if((e=document.getElementById('helpEnds')))h.ends=e.value;
+    if((e=document.getElementById('helpContains')))h.contains=e.value;
+    if((e=document.getElementById('helpPattern')))h.pattern=e.value;
+  }
+  function helperSearch(){
+    captureHelper();
+    var h=state.helper;h.error='';h.searched=true;
+    if(!decodeOrdbok()){h.error='Ordlisten er ikke lastet ennå. Sjekk at ordbok.js ligger ved siden av index.html.';h.results=null;render();return;}
+    var clean=function(s){return (s||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');};
+    var rackRaw=(h.rack||'').toUpperCase().replace(/[^A-ZÆØÅ?]/g,'');
+    var starts=clean(h.starts),ends=clean(h.ends),contains=clean(h.contains);
+    var patternRaw=(h.pattern||'').toUpperCase().replace(/[^A-ZÆØÅ.?]/g,'');
+    var letters=[],blanks=0,i;
+    for(i=0;i<rackRaw.length;i++){if(rackRaw[i]==='?')blanks++;else letters.push(rackRaw[i]);}
+    var have=countLetters(letters.join('')),totalTiles=letters.length+blanks;
+    var hasRack=totalTiles>0,hasFilter=!!(starts||ends||contains||patternRaw);
+    if(!hasRack&&!hasFilter){h.error='Skriv inn brikkene dine (bruk ? for blank), eller et filter under Avansert.';h.results=null;render();return;}
+    var patRe=patternRaw?new RegExp('^'+patternRaw.replace(/[?.]/g,'.')+'$'):null;
+    var vals=NOR_VALUES,out=[],CAP=200;
+    function consider(w){
+      if(starts&&w.slice(0,starts.length)!==starts)return;
+      if(ends&&w.slice(w.length-ends.length)!==ends)return;
+      if(contains&&w.indexOf(contains)<0)return;
+      if(patRe&&!patRe.test(w))return;
+      var score,bl=0;
+      if(hasRack){
+        if(h.useAll&&w.length!==totalTiles)return;
+        if(w.length>totalTiles)return;
+        var r=scoreOnRack(w,have,vals);
+        if(r.blanks>blanks)return;
+        score=r.score;bl=r.blanks;
+      } else { score=wordScore(w,vals); }
+      out.push({w:w,score:score,blanks:bl,len:w.length});
+    }
+    if(hasRack){
+      for(var L=2;L<=totalTiles;L++){var b=ORD_BY_LEN[L];if(!b)continue;for(i=0;i<b.length;i++)consider(b[i]);}
+    } else if(patternRaw){
+      var pb=ORD_BY_LEN[patternRaw.length];if(pb)for(i=0;i<pb.length;i++)consider(pb[i]);
+    } else {
+      for(i=0;i<ORDBOK.length;i++)consider(ORDBOK[i]);
+    }
+    out.sort(function(a,b){return b.score-a.score||b.len-a.len||(a.w<b.w?-1:1);});
+    h.total=out.length;h.truncated=out.length>CAP?out.length-CAP:0;h.results=out.slice(0,CAP);
+    render();
+  }
+
   /* ---- state ---- */
-  var state={games:[],view:{name:'home',id:null},setup:{name:'',players:[]},renaming:false,modal:null,backup:null,importErr:'',editScore:null,exportText:''};
+  var state={games:[],view:{name:'home',id:null},setup:{name:'',players:[]},renaming:false,modal:null,backup:null,importErr:'',editScore:null,exportText:'',
+    helper:{rack:'',starts:'',ends:'',contains:'',pattern:'',useAll:false,adv:false,results:null,searched:false,error:'',total:0,truncated:0}};
   var numInput='';      // current numpad entry (main game)
   var editNumInput='';  // current numpad entry (edit modal)
   var prevPage='';      // tracks last rendered page to control fadein
@@ -326,7 +403,10 @@ h1{margin:0;} p{margin:0;}
         +'</div>'
         +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">'
           +'<p style="color:#b7a892;font-size:15px;margin:0">Scorekeeper</p>'
-          +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' New game</button>'
+          +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+            +'<button class="sc-btn sc-soft" data-action="open-helper">'+ic('hash',18)+' Ordhjelper</button>'
+            +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' New game</button>'
+          +'</div>'
         +'</div>'
       +'</header>'
       +'<div class="storebar">'
@@ -506,6 +586,74 @@ h1{margin:0;} p{margin:0;}
     return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+grid+endBtn+spacer+'</div>'+entry;
   }
 
+  function helperResultRow(r){
+    var tiles='';
+    for(var i=0;i<r.w.length;i++)tiles+=tile(r.w[i],24,NOR_VALUES);
+    return '<div class="sc-card" style="padding:9px 11px;display:flex;align-items:center;gap:10px">'
+      +'<div style="display:flex;gap:2px;flex-wrap:wrap;flex:1;min-width:0">'+tiles+'</div>'
+      +(r.blanks?'<span style="font-size:11px;color:#8a7c69;flex:none" title="Blanke brikker brukt">'+r.blanks+'&nbsp;blank</span>':'')
+      +'<div class="sc-total" style="height:auto;padding:5px 11px;min-width:34px;flex:none">'+r.score+'</div>'
+    +'</div>';
+  }
+  function viewHelper(fade){
+    var h=state.helper;
+    var ready=ordbokReady();
+    var results='';
+    if(h.error){
+      results='<div class="sc-panel" style="padding:16px;color:#e6917f;font-size:14px">'+esc(h.error)+'</div>';
+    } else if(h.searched&&h.results){
+      if(h.results.length===0){
+        results='<div class="sc-panel" style="padding:30px 20px;text-align:center;color:#8a7c69">'
+          +'<div style="font-weight:700;font-size:16px;margin-bottom:4px;color:#cbbba2">Ingen ord</div>'
+          +'Fant ingen gyldige ord for dette. Prøv andre brikker eller færre filtre.</div>';
+      } else {
+        var head='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px">'
+          +'<div style="font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a7c69;display:flex;align-items:center;gap:6px">'+ic('check',14,{stroke:'#7BC47F'})+h.total+' treff</div>'
+          +(h.truncated?'<div style="font-size:12px;color:#6f6354">viser topp '+h.results.length+'</div>':'')
+        +'</div>';
+        results=head+'<div style="display:grid;gap:7px">'+h.results.map(helperResultRow).join('')+'</div>'
+          +(h.truncated?'<div style="text-align:center;font-size:12px;color:#6f6354;margin-top:12px">+ '+h.truncated+' flere ord skjult · legg til et filter for å snevre inn</div>':'');
+      }
+    } else {
+      results='<div class="sc-panel" style="padding:26px 20px;text-align:center;color:#8a7c69">'
+        +'<div style="display:flex;gap:4px;justify-content:center;margin-bottom:14px;opacity:.9">'+'ORD'.split('').map(function(c){return tile(c,34,NOR_VALUES);}).join('')+'</div>'
+        +'<div style="font-weight:700;font-size:16px;margin-bottom:6px;color:#cbbba2">Finn ord fra brikkene dine</div>'
+        +'Skriv inn bokstavene du har på stativet, så finner vi alle gyldige ord — sortert etter poeng.</div>';
+    }
+    var adv='';
+    if(h.adv){
+      var fld=function(id,lbl,ph,val){return '<div><label style="'+lblCss+';margin-bottom:5px">'+lbl+'</label>'
+        +'<input class="sc-inp" id="'+id+'" value="'+esc(val||'')+'" placeholder="'+ph+'" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>';};
+      adv='<div style="display:grid;gap:10px;margin-top:12px">'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+          +fld('helpStarts','Begynner med','f.eks. FOR',h.starts)
+          +fld('helpEnds','Slutter på','f.eks. ING',h.ends)
+        +'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+          +fld('helpContains','Inneholder','f.eks. XY',h.contains)
+          +fld('helpPattern','Mønster','B..T (. = vilkårlig)',h.pattern)
+        +'</div>'
+      +'</div>';
+    }
+    return '<div class="wrap'+(fade?' fadein':'')+'">'
+      +'<button class="sc-btn sc-ghost" style="margin-left:-8px;margin-bottom:14px" data-action="helper-back">'+ic('arrowLeft',18)+' Tilbake</button>'
+      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 4px">Ordhjelper</h1>'
+      +'<p style="color:#8a7c69;font-size:14px;margin:0 0 20px">Norsk bokmål · '+(ready?(window.SCRABBLE_ORDBOK.n||'').toLocaleString('no'):'—')+' ord'+(ORDBOK?'':'')+'</p>'
+      +'<div class="sc-card" style="padding:16px">'
+        +'<label style="'+lblCss+'">Brikkene dine <span style="color:#6f6354;font-weight:500">· bruk ? for blank</span></label>'
+        +'<input class="sc-inp" id="helpRack" value="'+esc(h.rack||'')+'" placeholder="f.eks. MSABLNE eller MS??" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-size:20px;letter-spacing:3px;text-transform:uppercase">'
+        +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
+          +'<button class="sc-btn sc-gold" data-action="helper-search" style="flex:1;min-width:130px;justify-content:center">'+ic('check',17)+' Finn ord</button>'
+          +'<button class="sc-btn '+(h.useAll?'sc-gold':'sc-soft')+' sc-sm" data-action="helper-toggle-all" aria-pressed="'+(h.useAll?'true':'false')+'" title="Krev at hele stativet brukes">'+(h.useAll?'✓ ':'')+'Bruk alle</button>'
+          +'<button class="sc-btn sc-ghost sc-sm" data-action="helper-toggle-adv" aria-pressed="'+(h.adv?'true':'false')+'">'+ic(h.adv?'chevUp':'chevDown',15)+' Avansert</button>'
+        +'</div>'
+        +adv
+      +'</div>'
+      +'<div style="margin-top:18px">'+results+'</div>'
+      +'<div style="font-size:11.5px;color:#6f6354;margin:16px 2px 0;line-height:1.5">Ordliste: Norsk Ordbank (Språkbanken / UiB, CC-BY 4.0). Poeng er ordets grunnpoeng uten bonusruter; blanke brikker teller 0.</div>'
+    +'</div>';
+  }
+
   function renderModals(){
     var html='';
     if(state.modal){
@@ -557,9 +705,11 @@ h1{margin:0;} p{margin:0;}
     if(state.view.name==='home')screen=viewHome(fade);
     else if(state.view.name==='setup')screen=viewSetup(fade);
     else if(state.view.name==='game')screen=viewGame(fade);
+    else if(state.view.name==='helper')screen=viewHelper(fade);
     else screen=viewHome(fade);
     app.innerHTML=screen+renderModals();
     if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
+    if(state.view.name==='helper'&&!state.helper.searched){var rk=document.getElementById('helpRack');if(rk)rk.focus();}
     if(state.backup==='export'){var t=document.getElementById('exportArea');if(t)t.value=state.exportText||'';}
   }
 
@@ -576,6 +726,9 @@ h1{margin:0;} p{margin:0;}
   function startSetup(){state.setup={name:'',players:[{id:uid(),name:''},{id:uid(),name:''}],hidden:false};state.view={name:'setup',id:null};render();}
   function goHome(){state.view={name:'home',id:null};state.renaming=false;render();}
   function openGame(id){numInput='';state.view={name:'game',id:id};state.renaming=false;render();}
+  function openHelper(){state.view={name:'helper',id:null};render();}
+  function helperToggleAll(){captureHelper();state.helper.useAll=!state.helper.useAll;if(state.helper.searched)helperSearch();else render();}
+  function helperToggleAdv(){captureHelper();state.helper.adv=!state.helper.adv;render();}
 
   function captureSetup(){
     var nm=document.getElementById('setupNameInput');if(nm)state.setup.name=nm.value;
@@ -693,6 +846,11 @@ h1{margin:0;} p{margin:0;}
     switch(a){
       case 'new-game':startSetup();break;
       case 'go-home':goHome();break;
+      case 'open-helper':openHelper();break;
+      case 'helper-back':captureHelper();goHome();break;
+      case 'helper-search':helperSearch();break;
+      case 'helper-toggle-all':helperToggleAll();break;
+      case 'helper-toggle-adv':helperToggleAdv();break;
       case 'open-game':openGame(el.getAttribute('data-id'));break;
       case 'export-open':openExport();break;
       case 'import-open':openImport();break;
@@ -741,6 +899,10 @@ h1{margin:0;} p{margin:0;}
       else if(e.key==='Backspace'){e.preventDefault();editNpDel();}
       else if(e.key==='Enter'){e.preventDefault();editScoreSave();}
       else if(e.key==='Escape'){closeEditScore();}
+      return;
+    }
+    if(state.view.name==='helper'){
+      if(e.key==='Enter'){e.preventDefault();helperSearch();}
       return;
     }
     if(state.view.name==='game'&&currentGame()&&!currentGame().finished){
