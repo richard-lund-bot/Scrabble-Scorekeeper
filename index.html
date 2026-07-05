@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#15110c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -14,7 +14,7 @@
 <title>Scrabble Scorekeeper</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
+html,body{margin:0;padding:0;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 body{background:linear-gradient(165deg,#15110c 0%,#1e1812 48%,#14100b 100%);min-height:100vh;min-height:100dvh;color:#f3e9d6;
   font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;}
 h1{margin:0;} p{margin:0;}
@@ -320,9 +320,9 @@ h1{margin:0;} p{margin:0;}
     }
     return '<div class="wrap'+(fade?' fadein':'')+'">'
       +'<header style="margin-bottom:16px">'
-        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
-          +'<div style="display:flex;gap:5px;flex-wrap:wrap">'+'SCRABBLE'.split('').map(function(c){return tile(c,34);}).join('')+'</div>'
-          +'<span class="sc-chip sc-chip-done" style="align-self:flex-start;margin-top:4px">v'+VERSION+'</span>'
+        +'<div style="margin-bottom:12px">'
+          +'<div style="display:flex;gap:4px;flex-wrap:nowrap;justify-content:center">'+'SCRABBLE'.split('').map(function(c){return tile(c,30);}).join('')+'</div>'
+          +'<div style="text-align:center;margin-top:6px;font-size:11px;letter-spacing:1px;color:#8a7c68">v'+VERSION+'</div>'
         +'</div>'
         +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">'
           +'<p style="color:#b7a892;font-size:15px;margin:0">Scorekeeper</p>'
@@ -750,6 +750,20 @@ h1{margin:0;} p{margin:0;}
       else if(e.key==='Enter'){e.preventDefault();addScore();}
     }
   });
+
+  // Disable all zooming on touch devices (pinch, double-tap, gesture)
+  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){
+    document.addEventListener(ev,function(e){e.preventDefault();},{passive:false});
+  });
+  document.addEventListener('touchmove',function(e){
+    if(e.touches.length>1){e.preventDefault();}
+  },{passive:false});
+  var lastTouchEnd=0;
+  document.addEventListener('touchend',function(e){
+    var now=e.timeStamp||0;
+    if(now-lastTouchEnd<=300){e.preventDefault();}
+    lastTouchEnd=now;
+  },{passive:false});
 
   load();render();
 })();
