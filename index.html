@@ -549162,7 +549162,7 @@ ZYUMYURKHACH
 
     var entry='';
     if(!g.finished){
-      entry='<div style="position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--bar-bg);border-top:1px solid var(--bar-line);box-shadow:0 -6px 24px rgba(0,0,0,.45);padding:12px var(--pad-r) calc(12px + env(safe-area-inset-bottom)) var(--pad-l)">'
+      entry='<div id="gameEntry" style="position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--bar-bg);border-top:1px solid var(--bar-line);box-shadow:0 -6px 24px rgba(0,0,0,.45);padding:12px var(--pad-r) calc(12px + env(safe-area-inset-bottom)) var(--pad-l)">'
         +'<div id="toastLayer" style="position:absolute;bottom:100%;left:0;right:0;padding-bottom:8px"></div>'
         +'<div style="max-width:608px;margin:0 auto">'
         +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+avatar(g.players[turn.player].name,colors[turn.player],34)
@@ -549197,9 +549197,9 @@ ZYUMYURKHACH
       +'<div class="eyebrow" style="display:flex;align-items:center;gap:6px;margin:0 2px 8px">'+ic('hash',14)+' Runde for runde</div>'
       +'<div class="sc-felt" style="padding:10px;overflow-x:auto"><div style="display:inline-grid;grid-template-columns:46px repeat('+n+',56px);gap:6px;min-width:100%">'+cells+'</div></div>'
       +'<div style="font-size:12px;color:var(--ink-4);margin:8px 2px 0">Trykk på et tall for å rette. Minuspoeng ved slutt? Skriv et negativt tall.</div></div>';
-    var endBtn=(!g.finished)?'<button class="sc-btn sc-soft sc-block" data-action="end-game"'+(g.scores.length?'':' disabled')+'>'+ic('flag',16)+' Avslutt &amp; kår vinneren</button>':'';
-    var spacer=(!g.finished)?'<div style="height:280px"></div>':'';
-    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+grid+endBtn+spacer+'</div>'+entry;
+    var endBtn=(!g.finished&&g.scores.length)?'<button class="sc-btn sc-soft sc-block" style="margin-bottom:16px" data-action="end-game">'+ic('flag',16)+' Avslutt &amp; kår vinneren</button>':'';
+    var spacer=(!g.finished)?'<div id="gameSpacer" style="height:300px"></div>':'';
+    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+endBtn+grid+spacer+'</div>'+entry;
   }
 
   function renderModals(){
@@ -549253,6 +549253,9 @@ ZYUMYURKHACH
     app.innerHTML=screen+renderModals();
     if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
     if(state.backup==='export'){var t=document.getElementById('exportArea');if(t)t.value=state.exportText||'';}
+    // Size the game spacer to exactly clear the fixed scoring bar so all content scrolls into view.
+    var ge=document.getElementById('gameEntry'),gs=document.getElementById('gameSpacer');
+    if(ge&&gs)gs.style.height=(ge.offsetHeight+24)+'px';
   }
 
   function showToast(msg,kind){
