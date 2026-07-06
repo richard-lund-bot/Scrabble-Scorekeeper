@@ -548549,20 +548549,39 @@ ZYUMYURKHACH
   function helperSearch(){
     var h=state.helper;h.error='';h.searched=true;
     if(!decodeOrdbok()){h.error='Ordlisten er ikke lastet ennå.';h.results=null;render();return;}
+    var clean=function(s){return (s||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');};
     var rackRaw=(h.rack||'').toUpperCase().replace(/[^A-ZÆØÅ?]/g,'');
+    var starts=clean(h.starts),ends=clean(h.ends),contains=clean(h.contains);
+    var patternRaw=(h.pattern||'').toUpperCase().replace(/[^A-ZÆØÅ.?]/g,'');
     var letters=[],blanks=0,i;
     for(i=0;i<rackRaw.length;i++){if(rackRaw[i]==='?')blanks++;else letters.push(rackRaw[i]);}
     var have=countLetters(letters.join('')),totalTiles=letters.length+blanks;
-    if(totalTiles===0){h.error='Skriv inn brikkene dine (bruk ? for blank).';h.results=null;render();return;}
+    var hasRack=totalTiles>0,hasFilter=!!(starts||ends||contains||patternRaw);
+    if(!hasRack&&!hasFilter){h.error='Skriv inn brikkene dine (bruk ? for blank), eller et filter under Avansert.';h.results=null;render();return;}
+    var patRe=patternRaw?new RegExp('^'+patternRaw.replace(/[?.]/g,'.')+'$'):null;
     var vals=NOR_VALUES,out=[],CAP=200;
     function consider(w){
-      if(h.useAll&&w.length!==totalTiles)return;
-      if(w.length>totalTiles)return;
-      var r=scoreOnRack(w,have,vals);
-      if(r.blanks>blanks)return;
-      out.push({w:w,score:r.score,blanks:r.blanks,len:w.length});
+      if(starts&&w.slice(0,starts.length)!==starts)return;
+      if(ends&&w.slice(w.length-ends.length)!==ends)return;
+      if(contains&&w.indexOf(contains)<0)return;
+      if(patRe&&!patRe.test(w))return;
+      var score,bl=0;
+      if(hasRack){
+        if(h.useAll&&w.length!==totalTiles)return;
+        if(w.length>totalTiles)return;
+        var r=scoreOnRack(w,have,vals);
+        if(r.blanks>blanks)return;
+        score=r.score;bl=r.blanks;
+      } else { score=wordScore(w,vals); }
+      out.push({w:w,score:score,blanks:bl,len:w.length});
     }
-    for(var L=2;L<=totalTiles;L++){var b=ORD_BY_LEN[L];if(!b)continue;for(i=0;i<b.length;i++)consider(b[i]);}
+    if(hasRack){
+      for(var L=2;L<=totalTiles;L++){var b=ORD_BY_LEN[L];if(!b)continue;for(i=0;i<b.length;i++)consider(b[i]);}
+    } else if(patternRaw){
+      var pb=ORD_BY_LEN[patternRaw.length];if(pb)for(i=0;i<pb.length;i++)consider(pb[i]);
+    } else {
+      for(i=0;i<ORDBOK.length;i++)consider(ORDBOK[i]);
+    }
     out.sort(function(a,b){return b.score-a.score||b.len-a.len||(a.w<b.w?-1:1);});
     h.total=out.length;h.truncated=out.length>CAP?out.length-CAP:0;h.results=out.slice(0,CAP);
     render();
@@ -548659,10 +548678,10 @@ ZYUMYURKHACH
      STATE
      ================================================================== */
   var state={
-    games:[], view:{name:'home',id:null}, setup:{name:'',players:[],hidden:false},
+    games:[], view:{name:'tools',id:null}, setup:{name:'',players:[],hidden:false},
     renaming:false, modal:null, backup:null, importErr:'', editScore:null, exportText:'',
-    tab:'find', toolsRet:{name:'home',id:null},
-    helper:{rack:'',useAll:false,results:null,searched:false,error:'',total:0,truncated:0},
+    tab:'find', toolsRet:null,
+    helper:{rack:'',starts:'',ends:'',contains:'',pattern:'',useAll:false,adv:false,field:'rack',results:null,searched:false,error:'',total:0,truncated:0},
     lookup:{word:'',result:null},
     rim:{word:'',results:null,searched:false,error:'',total:0,truncated:0},
     kryss:{clue:'',count:5,cells:['','','','',''],active:0,focus:'clue',results:null,searched:false,error:'',total:0,truncated:0}
@@ -548687,23 +548706,25 @@ ZYUMYURKHACH
     html+='<div class="sc-kbrow">'
       +'<button class="sc-key sc-key-fn" data-action="kb-back" title="Slett">⌫</button>'
       +(o.blank?'<button class="sc-key sc-key-fn" data-action="kb-blank" title="Blank brikke">?</button>':'')
+      +(o.wild?'<button class="sc-key sc-key-fn" data-action="kb-wild" title="Vilkårlig bokstav">•</button>':'')
       +'<button class="sc-key sc-key-go" data-action="kb-go">'+ic('search',16)+' '+esc(o.go)+'</button>'
     +'</div></div></div>';
     return html;
   }
   function kbKey(c){
     buzz(6);var t=state.tab;
-    if(t==='find'){if(state.helper.rack.replace(/[^A-ZÆØÅ?]/g,'').length<12){state.helper.rack=(state.helper.rack||'')+c;render();}return;}
+    if(t==='find'){var f=state.helper.field||'rack',cur=state.helper[f]||'',cap=f==='rack'?12:15;if(cur.replace(/[^A-ZÆØÅ]/g,'').length<cap){state.helper[f]=cur+c;render();}return;}
     if(t==='rim'){if(state.rim.word.length<20){state.rim.word+=c;render();}return;}
     if(t==='lookup'){if(state.lookup.word.length<20){state.lookup.word+=c;render();}return;}
     var k=state.kryss;
     if(k.focus==='clue'){if(k.clue.length<24)k.clue+=c;crossSearchable()?kryssSearch():render();return;}
     k.cells[k.active]=c;if(k.active<k.count-1)k.active++;crossSearchable()?kryssSearch():render();
   }
-  function kbBlank(){if(state.tab==='find'){buzz(6);if(state.helper.rack.replace(/[^A-ZÆØÅ?]/g,'').length<12){state.helper.rack+='?';render();}}}
+  function kbBlank(){if(state.tab==='find'&&(state.helper.field||'rack')==='rack'){buzz(6);if(state.helper.rack.replace(/[^A-ZÆØÅ?]/g,'').length<12){state.helper.rack+='?';render();}}}
+  function kbWild(){if(state.tab==='find'&&state.helper.field==='pattern'){buzz(6);if((state.helper.pattern||'').length<15){state.helper.pattern+='.';render();}}}
   function kbBack(){
     var t=state.tab;
-    if(t==='find'){state.helper.rack=state.helper.rack.slice(0,-1);render();return;}
+    if(t==='find'){var f=state.helper.field||'rack';state.helper[f]=(state.helper[f]||'').slice(0,-1);render();return;}
     if(t==='rim'){state.rim.word=state.rim.word.slice(0,-1);render();return;}
     if(t==='lookup'){state.lookup.word=state.lookup.word.slice(0,-1);render();return;}
     var k=state.kryss;
@@ -548716,13 +548737,9 @@ ZYUMYURKHACH
 
   /* on-screen field display (tiles + caret) */
   function fieldDisp(text,ph,active,vals){
-    var inner;
-    if(text){
-      inner=text.split('').map(function(c){return tile(c,26,vals);}).join('')+(active?'<span class="sc-caret"></span>':'');
-    } else {
-      inner='<span style="color:var(--ink-4);font-size:15px">'+esc(ph)+'</span>';
-    }
-    return inner;
+    if(!text)return '<span style="color:var(--ink-4);font-size:15px">'+esc(ph)+'</span>';
+    if(vals===false)return '<span style="font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase">'+esc(text)+'</span>'+(active?'<span class="sc-caret"></span>':'');
+    return text.split('').map(function(c){return tile(c,26,vals);}).join('')+(active?'<span class="sc-caret"></span>':'');
   }
 
   /* ==================================================================
@@ -548755,43 +548772,25 @@ ZYUMYURKHACH
     +'</div>';
   }
 
-  function toolCard(tab,icon,title,sub){
-    return '<button class="sc-toolcard" data-action="open-tools" data-tab="'+tab+'">'
-      +'<div class="sc-toolicon">'+ic(icon,22,{stroke:'#3a2c18'})+'</div>'
-      +'<div><div style="font-weight:800;font-size:16px">'+title+'</div>'
-      +'<div style="color:var(--ink-3);font-size:12.5px;margin-top:2px">'+sub+'</div></div>'
-    +'</button>';
-  }
-
-  function viewHome(fade){
-    var games=state.games;
-    var tools='<div class="sc-tools">'
-      +toolCard('find','sparkles','Finn ord','fra brikkene dine')
-      +toolCard('cross','grid','Kryssord','synonym + ruter')
-      +toolCard('rim','music','Rim','finn rimord')
-      +toolCard('lookup','search','Slå opp','gyldig? + betydning')
-    +'</div>';
-    var gamesSection;
+  function viewGames(fade){
+    var games=state.games,list;
     if(games.length===0){
-      gamesSection='<button class="sc-card sc-press" style="padding:16px;display:flex;align-items:center;gap:12px;width:100%;text-align:left" data-action="new-game">'
-        +'<div style="width:42px;height:42px;border-radius:12px;background:var(--raised);display:flex;align-items:center;justify-content:center;flex:none">'+ic('plus',22,{stroke:'#e9b949'})+'</div>'
-        +'<div style="flex:1"><div style="font-weight:800;font-size:15px">Nytt spill</div><div style="color:var(--ink-3);font-size:12.5px;margin-top:2px">Før poeng runde for runde — for et hvilket som helst spill</div></div>'
-        +ic('arrowRight',18,{stroke:'#8a7c69'})
-      +'</button>';
+      list='<div class="sc-panel" style="padding:40px 24px;text-align:center">'
+        +'<div style="margin-bottom:16px;opacity:.95">'+tileRow('SPILL',34,LETTER_VALUES,5)+'</div>'
+        +'<div style="font-weight:800;font-size:17px;margin-bottom:6px">Ingen spill ennå</div>'
+        +'<div style="color:var(--ink-3);font-size:14px;margin-bottom:20px">Før poeng runde for runde — for et hvilket som helst ordspill.</div>'
+        +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' Nytt spill</button></div>';
     } else {
-      gamesSection='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px">'
+      list='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px">'
         +'<h2 style="font-size:15px;font-weight:800">Dine spill</h2>'
         +'<button class="sc-btn sc-gold sc-sm" data-action="new-game">'+ic('plus',16)+' Nytt spill</button>'
       +'</div><div style="display:grid;gap:12px">'+games.map(gameCard).join('')+'</div>';
     }
     return '<div class="wrap'+(fade?' fadein':'')+'">'
-      +'<header style="text-align:center;margin-bottom:20px">'
-        +'<div style="display:flex;gap:4px;justify-content:center">'+'ORDSMED'.split('').map(function(c){return tile(c,28);}).join('')+'</div>'
-        +'<div style="margin-top:8px;font-size:13px;color:var(--ink-3);font-weight:600">Din hjelper for alle ordspill</div>'
-      +'</header>'
-      +'<div class="eyebrow" style="margin:0 2px 12px">Ordverktøy</div>'
-      +tools
-      +'<div style="margin-top:26px">'+gamesSection+'</div>'
+      +backBtn('games-back','Ordbok')
+      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 4px">Spill</h1>'
+      +'<p style="color:var(--ink-3);font-size:14px;margin:0 0 20px">Poengfører for et hvilket som helst ordspill</p>'
+      +list
       +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:26px;padding-top:16px;border-top:1px solid var(--line)">'
         +'<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-3)"><span class="sc-dot" style="background:#7BC47F"></span> Lagret på denne enheten</div>'
         +'<div style="display:flex;gap:6px">'
@@ -548831,12 +548830,27 @@ ZYUMYURKHACH
               +'<div class="sc-total" style="height:auto;padding:5px 11px;min-width:34px;flex:none">'+r.score+'</div></div>';
           }).join('')+'</div>'+moreNote(h.truncated,'legg til flere brikker for å snevre inn');
       }
-    } else { results=emptyState(tileRow('ORD',34,NOR_VALUES,4),"Finn ord fra brikkene dine",'Trykk bokstavene du har på ordtastaturet under — vi finner alle gyldige ord, sortert etter poeng.'); }
-    return '<div class="sc-field sc-field-active" data-action="focus-field" data-f="rack">'+fieldDisp(h.rack,'Trykk bokstavene dine… (? = blank)',true,NOR_VALUES)+'</div>'
-      +'<div style="display:flex;gap:8px;margin-top:12px;align-items:center">'
-        +'<button class="sc-btn '+(h.useAll?'sc-gold':'sc-soft')+' sc-sm" data-action="helper-toggle-all" aria-pressed="'+(h.useAll?'true':'false')+'">'+(h.useAll?'✓ ':'')+'Bruk alle brikker</button>'
-        +(h.rack?'<button class="sc-btn sc-ghost sc-sm" data-action="field-clear" style="margin-left:auto">Tøm</button>':'')
-      +'</div>'
+    } else { results=emptyState(tileRow('ORD',34,NOR_VALUES,4),"Finn ord fra brikkene dine",'Trykk bokstavene du har på ordtastaturet under — vi finner alle gyldige ord, sortert etter poeng. Trykk «Avansert» for å begynne på / slutte på / mønster.'); }
+    if(!h.adv&&h.field&&h.field!=='rack')h.field='rack';
+    var af=h.field||'rack';
+    var anyInput=h.rack||h.starts||h.ends||h.contains||h.pattern;
+    var advField=function(name,label,ph){return '<div><label class="sc-label" style="margin-bottom:5px">'+label+'</label>'
+      +'<div class="sc-field'+(af===name?' sc-field-active':'')+'" style="min-height:48px;padding:8px 12px" data-action="focus-field" data-f="'+name+'">'+fieldDisp(h[name],ph,af===name,false)+'</div></div>';};
+    var adv='';
+    if(h.adv){
+      adv='<div style="display:grid;gap:10px;margin-top:14px">'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+advField('starts','Begynner med','f.eks. FOR')+advField('ends','Slutter på','f.eks. ING')+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+advField('contains','Inneholder','f.eks. XY')+advField('pattern','Mønster','B••T')+'</div>'
+        +'<div style="font-size:11.5px;color:var(--ink-4)">Filtrene virker med eller uten brikker. I «Mønster» betyr • en vilkårlig bokstav (bruk •-tasten).</div>'
+      +'</div>';
+    }
+    return '<label class="sc-label">Brikkene dine <span class="opt">· bruk ? for blank</span></label>'
+      +'<div class="sc-field'+(af==='rack'?' sc-field-active':'')+'" data-action="focus-field" data-f="rack">'+fieldDisp(h.rack,'Trykk bokstavene dine…',af==='rack',NOR_VALUES)+'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">'
+        +'<button class="sc-btn '+(h.useAll?'sc-gold':'sc-soft')+' sc-sm" data-action="helper-toggle-all" aria-pressed="'+(h.useAll?'true':'false')+'">'+(h.useAll?'✓ ':'')+'Bruk alle</button>'
+        +'<button class="sc-btn '+(h.adv?'sc-gold':'sc-ghost')+' sc-sm" data-action="helper-toggle-adv" aria-pressed="'+(h.adv?'true':'false')+'">'+ic(h.adv?'chevUp':'chevDown',15)+' Avansert</button>'
+        +(anyInput?'<button class="sc-btn sc-ghost sc-sm" data-action="field-clear" style="margin-left:auto">Tøm alt</button>':'')
+      +'</div>'+adv
       +'<div style="margin-top:18px">'+results+'</div>'
       +'<div style="font-size:11.5px;color:var(--ink-4);margin:16px 2px 0;line-height:1.5">Ordliste: Norsk Ordbank (Språkbanken / UiB, CC-BY 4.0). Poeng er grunnpoeng uten bonusruter; blanke brikker teller 0.</div>';
   }
@@ -548937,18 +548951,24 @@ ZYUMYURKHACH
 
   function viewTools(fade){
     var tab=state.tab;
+    var fromGame=state.toolsRet&&state.toolsRet.name==='game';
+    var topbar=fromGame
+      ? '<div style="margin-bottom:14px">'+backBtn('tools-back','Til spillet')+'</div>'
+      : '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px">'
+          +'<div style="display:flex;gap:3px;align-items:center">'+'ORDSMED'.split('').map(function(c){return tile(c,19);}).join('')+'</div>'
+          +'<button class="sc-btn sc-soft sc-sm" data-action="open-games">'+ic('trophy',15)+' Spill</button>'
+        +'</div>';
     var seg=function(id,label){return '<button class="sc-seg-btn'+(tab===id?' sc-seg-on':'')+'" data-action="tools-tab" data-tab="'+id+'">'+label+'</button>';};
-    var titles={find:'Finn ord',cross:'Kryssord',rim:'Rim',lookup:'Slå opp'};
     var body=tab==='cross'?tabCross():tab==='rim'?tabRim():tab==='lookup'?tabLookup():tabFind();
+    var f=state.helper.field||'rack';
+    var kbOpts=tab==='find'?{blank:f==='rack',wild:f==='pattern',go:goLabel()}:{blank:false,wild:false,go:goLabel()};
     return '<div class="wrap'+(fade?' fadein':'')+'">'
-      +backBtn('tools-back','Tilbake')
-      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 4px">'+titles[tab]+'</h1>'
-      +'<p style="color:var(--ink-3);font-size:14px;margin:0 0 16px">Norsk bokmål · '+(ordbokReady()?ordCount().toLocaleString('nb-NO'):'—')+' ord</p>'
+      +topbar
       +'<div class="sc-seg" style="margin-bottom:18px">'+seg('find','Finn ord')+seg('cross','Kryssord')+seg('rim','Rim')+seg('lookup','Slå opp')+'</div>'
       +body
-      +'<div style="height:270px"></div>'
+      +'<div style="height:290px"></div>'
     +'</div>'
-    +keyboard({blank:tab==='find',go:goLabel()});
+    +keyboard(kbOpts);
   }
 
   /* ==================================================================
@@ -549011,7 +549031,7 @@ ZYUMYURKHACH
 
   function viewGame(fade){
     var g=currentGame();
-    if(!g){state.view={name:'home',id:null};return viewHome();}
+    if(!g){state.view={name:'games',id:null};return viewGames();}
     var n=g.players.length,totals=totalsOf(g),lead=leaderInfo(g),turn=nextTurn(g);
     var hide=g.hidden&&!g.finished;
     var colors=g.players.map(function(_,i){return COLORS[i%COLORS.length];});
@@ -549031,7 +549051,7 @@ ZYUMYURKHACH
         +'<span style="font-weight:800;font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(g.name)+'</span>'
         +ic('pencil',14,{stroke:'#6f6354'})+'</button>';
     }
-    header+='<button class="sc-icon" data-action="open-tools-game" title="Ordverktøy">'+ic('book',18)+'</button>';
+    header+='<button class="sc-btn sc-soft sc-sm" style="flex:none;gap:6px" data-action="open-tools-game">'+ic('book',15)+' Ordbok</button>';
     if(!g.finished){header+='<button class="sc-icon'+(g.hidden?' sc-icon-on':'')+'" data-action="toggle-hidden" title="'+(g.hidden?'Vis poeng':'Skjul poeng')+'" aria-pressed="'+(g.hidden?'true':'false')+'">'+ic(g.hidden?'eyeOff':'eye',18)+'</button>';}
     header+='<span class="sc-chip '+(g.finished?'sc-chip-done':'sc-chip-live')+'" style="flex:none">'+(g.finished?'Ferdig':'Runde '+(turn.round+1))+'</span></div>';
 
@@ -549147,8 +549167,8 @@ ZYUMYURKHACH
     prevPage=page;
     if(state.view.name==='setup')screen=viewSetup(fade);
     else if(state.view.name==='game')screen=viewGame(fade);
-    else if(state.view.name==='tools')screen=viewTools(fade);
-    else screen=viewHome(fade);
+    else if(state.view.name==='games')screen=viewGames(fade);
+    else screen=viewTools(fade);
     app.innerHTML=screen+renderModals();
     if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
     if(state.backup==='export'){var t=document.getElementById('exportArea');if(t)t.value=state.exportText||'';}
@@ -549167,16 +549187,18 @@ ZYUMYURKHACH
      HANDLERS
      ================================================================== */
   function startSetup(){state.setup={name:'',players:[{id:uid(),name:''},{id:uid(),name:''}],hidden:false};state.view={name:'setup',id:null};render();}
-  function goHome(){state.view={name:'home',id:null};state.renaming=false;render();}
+  function goGames(){state.view={name:'games',id:null};state.renaming=false;render();}
+  function gamesBack(){state.toolsRet=null;state.view={name:'tools',id:null};render();}
   function openGame(id){numInput='';state.view={name:'game',id:id};state.renaming=false;render();}
 
   function ensureCross(){var k=state.kryss;while(k.cells.length<k.count)k.cells.push('');if(k.cells.length>k.count)k.cells.length=k.count;if(k.active>=k.count)k.active=k.count-1;if(k.active<0)k.active=0;}
-  function openTools(tab,ret){state.toolsRet=ret||{name:'home',id:null};state.tab=tab||'find';ensureCross();render();state.view={name:'tools',id:null};render();}
-  function toolsBack(){var ret=state.toolsRet||{name:'home',id:null};state.view={name:ret.name,id:ret.id};render();}
+  function openTools(tab,ret){state.toolsRet=ret||null;state.tab=tab||'find';if(state.tab==='find')state.helper.field='rack';ensureCross();state.view={name:'tools',id:null};render();}
+  function toolsBack(){var ret=state.toolsRet;state.view=ret?{name:ret.name,id:ret.id}:{name:'games',id:null};render();}
   function toolsTab(tab){state.tab=tab;if(tab==='cross')ensureCross();render();}
-  function focusField(f){if(state.tab==='cross'&&f==='clue')state.kryss.focus='clue';render();}
-  function fieldClear(){var t=state.tab;if(t==='find'){state.helper.rack='';state.helper.results=null;state.helper.searched=false;}else if(t==='rim'){state.rim.word='';state.rim.results=null;state.rim.searched=false;}else if(t==='lookup'){state.lookup.word='';state.lookup.result=null;}render();}
+  function focusField(f){if(state.tab==='find')state.helper.field=f;else if(state.tab==='cross'&&f==='clue')state.kryss.focus='clue';render();}
+  function fieldClear(){var t=state.tab;if(t==='find'){var h=state.helper;h.rack='';h.starts='';h.ends='';h.contains='';h.pattern='';h.field='rack';h.results=null;h.searched=false;}else if(t==='rim'){state.rim.word='';state.rim.results=null;state.rim.searched=false;}else if(t==='lookup'){state.lookup.word='';state.lookup.result=null;}render();}
   function helperToggleAll(){state.helper.useAll=!state.helper.useAll;if(state.helper.searched)helperSearch();else render();}
+  function helperToggleAdv(){state.helper.adv=!state.helper.adv;if(!state.helper.adv)state.helper.field='rack';render();}
   function kryssBox(i){state.kryss.focus='cell';state.kryss.active=i;render();}
   function kryssCount(d){var k=state.kryss;k.count=clamp(k.count+d,2,15);ensureCross();if(k.focus==='cell'&&k.active>=k.count)k.active=k.count-1;crossSearchable()?kryssSearch():render();}
   function kryssReset(){state.kryss.clue='';state.kryss.cells=[];state.kryss.active=0;state.kryss.focus='clue';state.kryss.results=null;state.kryss.searched=false;ensureCross();render();}
@@ -549225,7 +549247,7 @@ ZYUMYURKHACH
   function endGame(){var g=currentGame();if(g){g.finished=true;g.updatedAt=Date.now();}state.modal=null;save();render();}
   function reopenGame(){var g=currentGame();if(g){g.finished=false;g.updatedAt=Date.now();}save();render();}
   function confirmDelete(id,name){state.modal={title:'Slette dette spillet?',body:'«'+name+'» og alle poeng fjernes for godt.',confirm:'Slett',danger:true,onYes:function(){doDelete(id);}};render();}
-  function doDelete(id){state.games=state.games.filter(function(g){return g.id!==id;});if(state.view.id===id)state.view={name:'home',id:null};state.modal=null;save();render();}
+  function doDelete(id){state.games=state.games.filter(function(g){return g.id!==id;});if(state.view.id===id)state.view={name:'games',id:null};state.modal=null;save();render();}
   function closeModal(){state.modal=null;render();}
   function openExport(){state.exportText=buildExport(state.games);state.backup='export';render();}
   function openImport(){state.backup='import';state.importErr='';render();}
@@ -549255,9 +549277,10 @@ ZYUMYURKHACH
     var a=el.getAttribute('data-action');
     switch(a){
       case 'new-game':startSetup();break;
-      case 'go-home':goHome();break;
-      case 'open-tools':openTools(el.getAttribute('data-tab')||'find',{name:'home',id:null});break;
-      case 'open-tools-game':openTools('cross',{name:'game',id:state.view.id});break;
+      case 'go-home':goGames();break;
+      case 'open-games':goGames();break;
+      case 'games-back':gamesBack();break;
+      case 'open-tools-game':openTools('find',{name:'game',id:state.view.id});break;
       case 'tools-back':toolsBack();break;
       case 'tools-tab':toolsTab(el.getAttribute('data-tab'));break;
       case 'focus-field':focusField(el.getAttribute('data-f'));break;
@@ -549265,8 +549288,10 @@ ZYUMYURKHACH
       case 'kb-key':kbKey(el.getAttribute('data-k'));break;
       case 'kb-back':kbBack();break;
       case 'kb-blank':kbBlank();break;
+      case 'kb-wild':kbWild();break;
       case 'kb-go':kbGo();break;
       case 'helper-toggle-all':helperToggleAll();break;
+      case 'helper-toggle-adv':helperToggleAdv();break;
       case 'kryss-box':kryssBox(+el.getAttribute('data-i'));break;
       case 'kryss-count':kryssCount(+el.getAttribute('data-d'));break;
       case 'kryss-reset':kryssReset();break;
@@ -549279,7 +549304,7 @@ ZYUMYURKHACH
       case 'setup-move':setupMove(+el.getAttribute('data-i'),+el.getAttribute('data-dir'));break;
       case 'setup-toggle-hidden':setupToggleHidden();break;
       case 'setup-start':setupStart();break;
-      case 'setup-back':captureSetup();goHome();break;
+      case 'setup-back':captureSetup();goGames();break;
       case 'rename-start':renameStart();break;
       case 'rename-commit':renameCommit();break;
       case 'rename-cancel':renameCancel();break;
@@ -549321,6 +549346,7 @@ ZYUMYURKHACH
       if(K==='Enter'){e.preventDefault();kbGo();}
       else if(K==='Backspace'){e.preventDefault();kbBack();}
       else if(K==='?'&&state.tab==='find'){e.preventDefault();kbBlank();}
+      else if(K==='.'&&state.tab==='find'){e.preventDefault();kbWild();}
       else if(K.length===1){var up=K.toUpperCase();if(LETTER_RE.test(up)){e.preventDefault();kbKey(up);}}
       return;
     }
