@@ -20,7 +20,7 @@ python3 -m http.server 8080
 
 The whole app ships as a single self-contained `index.html` (no external CSS/JS), so it works offline and on GitHub Pages. Inside it:
 
-- `<head><style>` — the full design system (CSS custom properties in `:root`, then components)
+- `<head><style>` — the full design system (CSS custom properties in `:root`, then components). Theming is variable-driven: a light palette overrides the `:root` vars under `@media (prefers-color-scheme: light)` (system) and `:root[data-theme="light"]` (manual). A theme toggle cycles system → light → dark, stored in `localStorage` (`ordsmed:theme`) and applied as `data-theme` on `<html>`. Keep new colors as `var(--…)` so both themes work.
 - Two data `<script>` blocks — `window.SCRABBLE_ORDBOK` (494 902-word Norwegian bokmål list, front-coded) and `window.SCRABBLE_SYNVEV` (synonym/category graph, base36). These are large (~3.4 MB); leave them untouched when editing UI.
 - The final `<script>` — the whole app: state, views, word engine, rhyme engine, on-screen keyboard, numpad, storage, event wiring. Everything renders into `<div id="app">`.
 
