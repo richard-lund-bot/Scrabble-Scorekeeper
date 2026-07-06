@@ -19,7 +19,7 @@
   --line:#34291f; --line-2:#3a2f24;
   --gold:#e9b949; --gold-ink:#2a1f0c;
   --good:#7BC47F; --good-ink:#8fd28f; --bad:#e6917f;
-  --felt-a:#21503d; --felt-b:#1b4231; --felt-line:#143226;
+  --felt-a:#21503d; --felt-b:#1b4231; --felt-line:#143226; --felt-ink:#cfe3d8; --felt-ink-2:#9fc3b3;
   --card-a:#251e17; --card-b:#201a13;
   --bar-bg:#1a140e; --bar-line:#33281d;
   --bg1:#221a12; --bg2:#181209; --bg3:#120e08;
@@ -39,6 +39,7 @@
   --ink:#2c2114; --ink-2:#5c4d38; --ink-3:#877860; --ink-4:#a89a82;
   --surface:#fffdf6; --surface-2:#f8f1e0; --raised:#ece0c8; --raised-2:#e2d4b7; --sunk:#fdf8ec;
   --line:#e8dcc2; --line-2:#dccdab; --good-ink:#2f8f43; --bad:#c65b45;
+  --felt-a:#d5e7da; --felt-b:#c4dcca; --felt-line:#aecdb8; --felt-ink:#2f4d3d; --felt-ink-2:#436a58;
   --card-a:#fffef8; --card-b:#fbf5e7; --bar-bg:#f4ebd6; --bar-line:#e6d8bd;
   --bg1:#fdf6e6; --bg2:#f4e9d0; --bg3:#efe1c4;
   --ov:rgba(74,54,26,.055); --ov-2:rgba(74,54,26,.11);
@@ -48,6 +49,7 @@
   --ink:#2c2114; --ink-2:#5c4d38; --ink-3:#877860; --ink-4:#a89a82;
   --surface:#fffdf6; --surface-2:#f8f1e0; --raised:#ece0c8; --raised-2:#e2d4b7; --sunk:#fdf8ec;
   --line:#e8dcc2; --line-2:#dccdab; --good-ink:#2f8f43; --bad:#c65b45;
+  --felt-a:#d5e7da; --felt-b:#c4dcca; --felt-line:#aecdb8; --felt-ink:#2f4d3d; --felt-ink-2:#436a58;
   --card-a:#fffef8; --card-b:#fbf5e7; --bar-bg:#f4ebd6; --bar-line:#e6d8bd;
   --bg1:#fdf6e6; --bg2:#f4e9d0; --bg3:#efe1c4;
   --ov:rgba(74,54,26,.055); --ov-2:rgba(74,54,26,.11);
@@ -549179,9 +549181,9 @@ ZYUMYURKHACH
     }
 
     var cells='<div></div>';
-    g.players.forEach(function(p,i){cells+='<div style="text-align:center;padding-bottom:2px"><span class="sc-dot" style="background:'+colors[i]+';display:inline-block;margin-bottom:3px"></span><div style="font-size:11px;color:#cfe3d8;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div></div>';});
+    g.players.forEach(function(p,i){cells+='<div style="text-align:center;padding-bottom:2px"><span class="sc-dot" style="background:'+colors[i]+';display:inline-block;margin-bottom:3px"></span><div style="font-size:11px;color:var(--felt-ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div></div>';});
     for(var rr=0;rr<displayRounds;rr++){
-      cells+='<div style="display:flex;align-items:center;justify-content:center;color:#9fc3b3;font-weight:700;font-size:13px">R'+(rr+1)+'</div>';
+      cells+='<div style="display:flex;align-items:center;justify-content:center;color:var(--felt-ink-2);font-weight:700;font-size:13px">R'+(rr+1)+'</div>';
       for(var c=0;c<n;c++){
         var ti=rr*n+c, filled=ti<g.scores.length, isCurrent=!g.finished&&ti===g.scores.length;
         if(filled){cells+='<button class="sc-scell" data-action="edit-cell" data-ti="'+ti+'" title="Trykk for å rette">'+g.scores[ti]+'</button>';}
@@ -549444,7 +549446,7 @@ ZYUMYURKHACH
   ['gesturestart','gesturechange','gestureend'].forEach(function(ev){document.addEventListener(ev,function(e){e.preventDefault();},{passive:false});});
   document.addEventListener('touchmove',function(e){if(e.touches.length>1){e.preventDefault();}},{passive:false});
   var lastTouchEnd=0;
-  document.addEventListener('touchend',function(e){var now=e.timeStamp||0;if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
+  document.addEventListener('touchend',function(e){var now=e.timeStamp||0;var tt=e.target;var interactive=tt&&tt.closest&&tt.closest('button,a,input,textarea,[data-action]');if(!interactive&&now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
 
   loadTheme();applyTheme();load();render();
 })();
