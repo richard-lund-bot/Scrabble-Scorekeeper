@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -11,82 +11,167 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%2250%22%20height%3D%2250%22%20rx%3D%2211%22%20fill%3D%22%23f2debc%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%2250%22%20height%3D%2250%22%20rx%3D%2211%22%20fill%3D%22none%22%20stroke%3D%22%23c9a054%22%20stroke-width%3D%222.5%22%2F%3E%3Crect%20x%3D%2210.5%22%20y%3D%2210.5%22%20width%3D%2243%22%20height%3D%2243%22%20rx%3D%228%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-opacity%3D%22.45%22%20stroke-width%3D%221.5%22%2F%3E%3Ctext%20x%3D%2230.5%22%20y%3D%2243%22%20font-family%3D%22Georgia%2C%20'Times%20New%20Roman'%2C%20serif%22%20font-size%3D%2237%22%20font-weight%3D%22700%22%20text-anchor%3D%22middle%22%20fill%3D%22%232a1f0c%22%3ES%3C%2Ftext%3E%3Ctext%20x%3D%2248%22%20y%3D%2250%22%20font-family%3D%22Georgia%2C%20serif%22%20font-size%3D%2214%22%20font-weight%3D%22700%22%20text-anchor%3D%22middle%22%20fill%3D%22%232a1f0c%22%3E1%3C%2Ftext%3E%3C%2Fsvg%3E">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png">
-<title>Scrabble Scorekeeper</title>
+<title>Ordsmed</title>
 <style>
+:root{
+  --ink:#f3e9d6; --ink-2:#c9b99f; --ink-3:#9a8b73; --ink-4:#6f6354;
+  --surface:#241d16; --surface-2:#1f1810; --raised:#2c241b; --raised-2:#3a3126; --sunk:#15110c;
+  --line:#34291f; --line-2:#3a2f24;
+  --gold:#e9b949; --gold-ink:#2a1f0c;
+  --good:#7BC47F; --good-ink:#8fd28f; --bad:#e6917f;
+  --felt-a:#21503d; --felt-b:#1b4231; --felt-line:#143226; --felt-ink:#cfe3d8; --felt-ink-2:#9fc3b3;
+  --card-a:#251e17; --card-b:#201a13;
+  --bar-bg:#1a140e; --bar-line:#33281d;
+  --bg1:#221a12; --bg2:#181209; --bg3:#120e08;
+  --ov:rgba(255,255,255,.05); --ov-2:rgba(255,255,255,.1);
+  --r-sm:10px; --r:14px; --r-lg:18px; --r-xl:22px; --pill:999px;
+  --tap:44px;
+  --sh-1:0 2px 6px rgba(0,0,0,.28);
+  --sh-2:0 8px 24px rgba(0,0,0,.4);
+  --sh-gold:0 6px 18px rgba(224,173,63,.28);
+  --pad-t:calc(18px + env(safe-area-inset-top));
+  --pad-r:calc(16px + env(safe-area-inset-right));
+  --pad-l:calc(16px + env(safe-area-inset-left));
+  --pad-b:calc(40px + env(safe-area-inset-bottom));
+}
+/* Light theme: follows system, unless manually overridden via data-theme */
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  --ink:#2c2114; --ink-2:#5c4d38; --ink-3:#877860; --ink-4:#a89a82;
+  --surface:#fffdf6; --surface-2:#f8f1e0; --raised:#ece0c8; --raised-2:#e2d4b7; --sunk:#fdf8ec;
+  --line:#e8dcc2; --line-2:#dccdab; --good-ink:#2f8f43; --bad:#c65b45;
+  --felt-a:#d5e7da; --felt-b:#c4dcca; --felt-line:#aecdb8; --felt-ink:#2f4d3d; --felt-ink-2:#436a58;
+  --card-a:#fffef8; --card-b:#fbf5e7; --bar-bg:#f4ebd6; --bar-line:#e6d8bd;
+  --bg1:#fdf6e6; --bg2:#f4e9d0; --bg3:#efe1c4;
+  --ov:rgba(74,54,26,.055); --ov-2:rgba(74,54,26,.11);
+  --sh-1:0 2px 6px rgba(120,90,40,.14); --sh-2:0 8px 24px rgba(120,90,40,.16);
+}}
+:root[data-theme="light"]{
+  --ink:#2c2114; --ink-2:#5c4d38; --ink-3:#877860; --ink-4:#a89a82;
+  --surface:#fffdf6; --surface-2:#f8f1e0; --raised:#ece0c8; --raised-2:#e2d4b7; --sunk:#fdf8ec;
+  --line:#e8dcc2; --line-2:#dccdab; --good-ink:#2f8f43; --bad:#c65b45;
+  --felt-a:#d5e7da; --felt-b:#c4dcca; --felt-line:#aecdb8; --felt-ink:#2f4d3d; --felt-ink-2:#436a58;
+  --card-a:#fffef8; --card-b:#fbf5e7; --bar-bg:#f4ebd6; --bar-line:#e6d8bd;
+  --bg1:#fdf6e6; --bg2:#f4e9d0; --bg3:#efe1c4;
+  --ov:rgba(74,54,26,.055); --ov-2:rgba(74,54,26,.11);
+  --sh-1:0 2px 6px rgba(120,90,40,.14); --sh-2:0 8px 24px rgba(120,90,40,.16);
+}
 *,*::before,*::after{box-sizing:border-box;}
 html,body{margin:0;padding:0;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
-body{background:linear-gradient(165deg,#15110c 0%,#1e1812 48%,#14100b 100%);min-height:100vh;min-height:100dvh;color:#f3e9d6;
-  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;}
-h1{margin:0;} p{margin:0;}
-.wrap{max-width:760px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));}
-.storebar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:18px;padding:8px 12px;background:rgba(255,255,255,.03);border:1px solid #2c241b;border-radius:12px;}
+body{
+  background:radial-gradient(120% 80% at 50% -10%,var(--bg1) 0%,var(--bg2) 55%,var(--bg3) 100%) fixed;
+  min-height:100vh;min-height:100dvh;color:var(--ink);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.4;
+}
+h1,h2,p{margin:0;}
+button{font-family:inherit;}
+a{color:inherit;}
+::selection{background:rgba(233,185,73,.3);}
 
-.sc-tile{position:relative;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(158deg,#f4e8ca,#e3d0a4);color:#3a2c18;font-weight:800;border-radius:7px;
-  font-family:Georgia,"Times New Roman",serif;line-height:1;box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -2px 3px rgba(120,90,40,.28),0 2px 4px rgba(0,0,0,.4);}
-.sc-tile-val{position:absolute;right:3px;bottom:1px;font-weight:700;opacity:.8;}
+.wrap{max-width:640px;margin:0 auto;padding:var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);}
+.muted{color:var(--ink-3);}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-3);}
 
-.sc-btn{border:0;cursor:pointer;font-weight:700;border-radius:12px;padding:11px 15px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;
-  transition:transform .12s ease,background .15s ease,box-shadow .15s ease,opacity .15s ease;color:inherit;font-family:inherit;}
+/* ── tiles ── */
+.sc-tile{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(158deg,#f6ead0,#e2cfa0);color:#3a2c18;font-weight:800;border-radius:20%;
+  font-family:Georgia,"Times New Roman",serif;line-height:1;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 3px rgba(120,90,40,.3),0 2px 5px rgba(0,0,0,.4);}
+.sc-tile-val{position:absolute;right:11%;bottom:4%;font-weight:700;opacity:.78;}
+
+/* ── buttons ── */
+.sc-btn{border:0;cursor:pointer;font-weight:700;border-radius:var(--r);padding:12px 16px;font-size:15px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;min-height:var(--tap);
+  transition:transform .12s ease,background .15s ease,box-shadow .15s ease,opacity .15s ease,filter .15s ease;color:inherit;}
 .sc-btn:active{transform:translateY(1px) scale(.99);}
-.sc-btn:disabled{opacity:.42;cursor:not-allowed;}
-.sc-sm{padding:7px 11px;font-size:13px;border-radius:10px;}
-.sc-gold{background:linear-gradient(180deg,#f4c95c,#e0ad3f);color:#2a1f0c;box-shadow:0 6px 16px rgba(224,173,63,.26);}
-.sc-gold:hover:not(:disabled){box-shadow:0 9px 22px rgba(224,173,63,.4);}
-.sc-soft{background:#322a21;color:#f3e9d6;}
-.sc-soft:hover:not(:disabled){background:#3c3328;}
-.sc-ghost{background:transparent;color:#cbbba2;}
-.sc-ghost:hover:not(:disabled){background:rgba(255,255,255,.06);}
+.sc-btn:disabled{opacity:.4;cursor:not-allowed;}
+.sc-sm{padding:8px 12px;font-size:13px;border-radius:var(--r-sm);min-height:38px;}
+.sc-gold{background:linear-gradient(180deg,#f4cd64,#e0ad3f);color:var(--gold-ink);box-shadow:var(--sh-gold);}
+.sc-gold:hover:not(:disabled){filter:brightness(1.05);box-shadow:0 9px 24px rgba(224,173,63,.42);}
+.sc-soft{background:var(--raised);color:var(--ink);}
+.sc-soft:hover:not(:disabled){background:var(--raised-2);}
+.sc-ghost{background:transparent;color:var(--ink-2);}
+.sc-ghost:hover:not(:disabled){background:var(--ov);}
 .sc-danger{background:#5a2a24;color:#f5ddd6;}
 .sc-danger:hover:not(:disabled){background:#6d332b;}
+.sc-block{width:100%;}
 
-.sc-icon{border:0;background:rgba(255,255,255,.05);color:#cbbba2;cursor:pointer;width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;transition:background .15s,color .15s,opacity .15s;flex:none;}
-.sc-icon:hover:not(:disabled){background:rgba(255,255,255,.1);}
+.sc-icon{border:0;background:var(--ov);color:var(--ink-2);cursor:pointer;width:var(--tap);height:var(--tap);
+  border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;transition:background .15s,color .15s,opacity .15s;flex:none;}
+.sc-icon:hover:not(:disabled){background:var(--ov-2);}
 .sc-icon:disabled{opacity:.35;cursor:not-allowed;}
 .sc-icon-danger:hover:not(:disabled){background:#5a2a24;color:#f5ddd6;}
-.sc-icon-on{background:linear-gradient(180deg,#f4c95c,#e0ad3f);color:#2a1f0c;}
-.sc-icon-on:hover:not(:disabled){background:linear-gradient(180deg,#f6d066,#e6b44a);color:#2a1f0c;}
-.sc-mini{border:0;background:rgba(255,255,255,.05);color:#b7a892;cursor:pointer;width:30px;height:20px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.sc-icon-on{background:linear-gradient(180deg,#f4cd64,#e0ad3f);color:var(--gold-ink);}
+.sc-icon-on:hover:not(:disabled){filter:brightness(1.05);}
+
+.sc-mini{border:0;background:var(--ov);color:var(--ink-3);cursor:pointer;width:34px;height:22px;
+  display:flex;align-items:center;justify-content:center;transition:background .15s;}
 .sc-mini:first-child{border-radius:8px 8px 0 0;}
 .sc-mini:last-child{border-radius:0 0 8px 8px;margin-top:2px;}
-.sc-mini:hover:not(:disabled){background:rgba(255,255,255,.12);}
+.sc-mini:hover:not(:disabled){background:var(--ov-2);}
 .sc-mini:disabled{opacity:.3;cursor:not-allowed;}
 
-.sc-titlebtn{border:0;background:transparent;color:#f3e9d6;cursor:pointer;display:flex;align-items:center;gap:7px;flex:1;min-width:0;padding:6px 4px;border-radius:8px;transition:background .15s;text-align:left;font-family:inherit;}
-.sc-titlebtn:hover{background:rgba(255,255,255,.05);}
+.sc-titlebtn{border:0;background:transparent;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:8px;
+  flex:1;min-width:0;padding:6px 4px;border-radius:8px;transition:background .15s;text-align:left;}
+.sc-titlebtn:hover{background:var(--ov);}
 
-.sc-inp{background:#1b1610;border:1px solid #3a2f24;color:#f3e9d6;border-radius:12px;padding:11px 13px;font-size:16px;outline:none;width:100%;font-family:inherit;transition:border .15s,box-shadow .15s;}
-.sc-inp::placeholder{color:#6f6354;}
-.sc-inp:focus{border-color:#e0ad3f;box-shadow:0 0 0 3px rgba(224,173,63,.18);}
-.sc-area{width:100%;min-height:150px;resize:vertical;background:#15110c;border:1px solid #3a2f24;color:#d8cbb4;border-radius:12px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.5;outline:none;}
-.sc-area:focus{border-color:#e0ad3f;box-shadow:0 0 0 3px rgba(224,173,63,.18);}
+/* ── inputs ── */
+.sc-inp{background:var(--sunk);border:1.5px solid var(--line-2);color:var(--ink);border-radius:var(--r);
+  padding:12px 14px;font-size:16px;outline:none;width:100%;font-family:inherit;transition:border .15s,box-shadow .15s;min-height:var(--tap);}
+.sc-inp::placeholder{color:var(--ink-4);}
+.sc-inp:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,173,63,.16);}
+.sc-area{width:100%;min-height:140px;resize:vertical;background:var(--sunk);border:1.5px solid var(--line-2);color:var(--ink-2);
+  border-radius:var(--r);padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.5;outline:none;}
+.sc-area:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,173,63,.16);}
+.sc-label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin:0 2px 8px;}
+.sc-label .opt{color:var(--ink-4);font-weight:500;}
 
-.sc-card{background:linear-gradient(180deg,#241d16,#201a13);border:1px solid #34291f;border-radius:16px;}
-.sc-panel{background:#1f1810;border:1px solid #33281d;border-radius:16px;}
+/* ── surfaces ── */
+.sc-card{background:linear-gradient(180deg,var(--card-a),var(--card-b));border:1px solid var(--line);border-radius:var(--r-lg);}
+.sc-panel{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-lg);}
+.sc-press{cursor:pointer;transition:transform .12s ease,border-color .15s ease,box-shadow .15s ease;}
+.sc-press:hover{transform:translateY(-2px);border-color:var(--line-2);box-shadow:var(--sh-2);}
+.sc-press:active{transform:translateY(0);}
 
-.sc-chip{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.4px;white-space:nowrap;}
-.sc-chip-live{background:rgba(123,196,127,.16);color:#8fd28f;}
-.sc-chip-done{background:rgba(240,192,82,.16);color:#f0c052;}
-.sc-dot{width:7px;height:7px;border-radius:999px;display:inline-block;}
+.sc-chip{font-size:11px;font-weight:800;padding:3px 10px;border-radius:var(--pill);letter-spacing:.4px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
+.sc-chip-live{background:rgba(123,196,127,.16);color:var(--good-ink);}
+.sc-chip-done{background:rgba(240,192,82,.16);color:var(--gold);}
+.sc-dot{width:7px;height:7px;border-radius:var(--pill);display:inline-block;}
 
-.sc-felt{background:linear-gradient(180deg,#21503d,#1b4231);border:1px solid #143226;border-radius:14px;box-shadow:inset 0 2px 12px rgba(0,0,0,.35);}
-.sc-scell{border:0;cursor:pointer;height:40px;border-radius:7px;font-weight:800;font-size:16px;font-family:Georgia,serif;color:#3a2c18;background:linear-gradient(158deg,#f4e8ca,#e3d0a4);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.3);transition:transform .1s ease,box-shadow .15s,background .3s ease;width:100%;}
+/* ── segmented tabs ── */
+.sc-seg{display:flex;gap:4px;background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);padding:4px;}
+.sc-seg-btn{flex:1;border:0;background:transparent;color:var(--ink-3);cursor:pointer;font-weight:700;font-size:13.5px;
+  padding:10px 8px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s,color .15s;min-height:40px;}
+.sc-seg-btn:hover{color:var(--ink-2);}
+.sc-seg-on{background:linear-gradient(180deg,#f4cd64,#e0ad3f);color:var(--gold-ink);box-shadow:var(--sh-1);}
+.sc-seg-on:hover{color:var(--gold-ink);}
+
+/* ── felt grid ── */
+.sc-felt{background:linear-gradient(180deg,var(--felt-a),var(--felt-b));border:1px solid var(--felt-line);
+  border-radius:var(--r);box-shadow:inset 0 2px 12px rgba(0,0,0,.35);}
+.sc-scell{border:0;cursor:pointer;height:40px;border-radius:7px;font-weight:800;font-size:16px;font-family:Georgia,serif;
+  color:#3a2c18;background:linear-gradient(158deg,#f6ead0,#e2cfa0);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.3);transition:transform .1s ease,box-shadow .15s,background .3s ease;width:100%;}
 .sc-scell:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 4px 8px rgba(0,0,0,.4);}
-.sc-scell.sc-cell-flash{background:linear-gradient(158deg,#a8e6aa,#7bc47f) !important;color:#15110c;transform:scale(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 4px 12px rgba(91,196,127,.55);}
-.sc-slot-current{border:2px dashed #f0c052;border-radius:7px;background:rgba(240,192,82,.08);animation:sc-pulse 1.7s ease-in-out infinite;cursor:pointer;}
+.sc-scell.sc-cell-flash{background:linear-gradient(158deg,#a8e6aa,#7bc47f)!important;color:#15110c;transform:scale(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 4px 12px rgba(91,196,127,.55);}
+.sc-slot-current{border:2px dashed var(--gold);border-radius:7px;background:rgba(240,192,82,.08);animation:sc-pulse 1.7s ease-in-out infinite;}
 .sc-slot-empty{border:1px dashed #2f5847;border-radius:7px;background:rgba(255,255,255,.02);}
-.sc-total{height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-weight:800;font-size:16px;color:#2a1f0c;background:linear-gradient(180deg,#f4c95c,#e0ad3f);box-shadow:0 2px 6px rgba(224,173,63,.3);}
+.sc-total{height:40px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-weight:800;font-size:16px;
+  color:var(--gold-ink);background:linear-gradient(180deg,#f4cd64,#e0ad3f);box-shadow:0 2px 6px rgba(224,173,63,.3);}
 .sc-total-hidden{background:linear-gradient(180deg,#7c6a45,#6a5a39);color:#c9b78c;box-shadow:none;}
 
 .sc-stand{transition:border-color .3s ease;overflow:hidden;}
-.sc-leader{border-color:#caa23e !important;background:linear-gradient(180deg,#2e2616,#241d12);animation:sc-glow 2.6s ease-in-out infinite;}
-.sc-shine{position:absolute;top:0;left:0;height:100%;width:45%;pointer-events:none;border-radius:16px;background:linear-gradient(100deg,transparent,rgba(255,228,160,.16),transparent);transform:translateX(-160%);animation:sc-shimmer 3.4s ease-in-out infinite;}
 .sc-crown{animation:sc-crownbob 2.2s ease-in-out infinite;transform-origin:center;}
-.sc-winner{border-color:#caa23e !important;}
+.sc-winner{border-color:#caa23e!important;}
 .sc-popnum{animation:sc-pop .35s ease both;}
 .fadein{animation:sc-rise .4s ease both;}
 
-.sc-overlay{position:fixed;inset:0;background:rgba(8,6,3,.66);display:grid;place-items:center;z-index:60;padding:16px;animation:sc-fade .18s ease both;}
-.sc-toast{display:inline-flex;align-items:center;background:#2a2114;border:1px solid #caa23e;color:#f6e7c4;padding:10px 18px;border-radius:999px;font-weight:800;font-size:14px;box-shadow:0 12px 32px rgba(0,0,0,.45);animation:sc-toastpop 2.6s ease forwards;white-space:nowrap;}
+/* ── overlays / sheets ── */
+.sc-overlay{position:fixed;inset:0;background:rgba(8,6,3,.66);backdrop-filter:blur(2px);display:grid;place-items:center;z-index:60;padding:16px;animation:sc-fade .18s ease both;}
+.sc-sheet{animation:sc-sheet .26s cubic-bezier(.2,.8,.2,1) both;}
+.sc-toast{display:inline-flex;align-items:center;background:#2a2114;border:1px solid #caa23e;color:#f6e7c4;padding:11px 18px;
+  border-radius:var(--pill);font-weight:800;font-size:14px;box-shadow:0 12px 32px rgba(0,0,0,.45);animation:sc-toastpop 2.6s ease forwards;white-space:nowrap;}
 #toastLayer{display:flex;justify-content:center;pointer-events:none;}
 
 .sc-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
@@ -94,26 +179,78 @@ h1{margin:0;} p{margin:0;}
 
 @keyframes sc-rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes sc-fade{from{opacity:0;}to{opacity:1;}}
+@keyframes sc-sheet{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
 @keyframes sc-pop{0%{transform:scale(.55);opacity:0;}60%{transform:scale(1.18);}100%{transform:scale(1);opacity:1;}}
 @keyframes sc-pulse{0%,100%{opacity:.55;}50%{opacity:1;}}
-@keyframes sc-glow{0%,100%{box-shadow:0 0 0 1px rgba(240,192,82,.45),0 0 16px rgba(240,192,82,.18);}50%{box-shadow:0 0 0 1px rgba(240,192,82,.8),0 0 30px rgba(240,192,82,.42);}}
-@keyframes sc-shimmer{0%{transform:translateX(-160%);}60%,100%{transform:translateX(260%);}}
 @keyframes sc-crownbob{0%,100%{transform:translateY(0) rotate(-5deg);}50%{transform:translateY(-3px) rotate(5deg);}}
 @keyframes sc-confetti{0%{transform:translateY(-14px) rotate(0);opacity:1;}100%{transform:translateY(220px) rotate(680deg);opacity:0;}}
 @keyframes sc-toastpop{0%{opacity:0;transform:translateY(6px);}12%{opacity:1;transform:translateY(0);}86%{opacity:1;}100%{opacity:0;transform:translateY(6px);}}
-
 @media (prefers-reduced-motion: reduce){
-  .sc-leader,.sc-shine,.sc-crown,.sc-cpiece,.sc-slot-current,.sc-popnum,.fadein{animation:none !important;}
-  .sc-leader{box-shadow:0 0 0 1px rgba(240,192,82,.7);}
+  .sc-crown,.sc-cpiece,.sc-slot-current,.sc-popnum,.fadein,.sc-sheet{animation:none!important;}
 }
 
-/* ── In-screen numpad ── */
-.sc-np-display{background:#15110c;border:1.5px solid #3a2f24;border-radius:12px;padding:9px 14px;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;min-height:48px;user-select:none;transition:border-color .15s,color .15s;color:#6f6354;}
-.sc-np-display.sc-np-filled{border-color:#e0ad3f;color:#f4d27a;}
-.sc-np{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px;}
-.sc-np-btn{border:0;cursor:pointer;font-weight:800;font-size:16px;font-family:Georgia,"Times New Roman",serif;color:#3a2c18;background:linear-gradient(158deg,#f4e8ca,#e3d0a4);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.3);border-radius:8px;height:40px;line-height:1;transition:transform .08s ease,box-shadow .12s ease;user-select:none;-webkit-tap-highlight-color:transparent;}
+/* ── numpad (classic 3×4) ── */
+.sc-np-display{background:var(--sunk);border:1.5px solid var(--line-2);border-radius:var(--r);padding:10px 16px;
+  font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;min-height:52px;user-select:none;
+  transition:border-color .15s,color .15s;color:var(--ink-4);display:flex;align-items:center;justify-content:flex-end;}
+.sc-np-display.sc-np-filled{border-color:var(--gold);color:var(--gold);}
+.sc-np{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px;}
+.sc-np-btn{border:0;cursor:pointer;font-weight:800;font-size:20px;font-family:Georgia,"Times New Roman",serif;color:#3a2c18;
+  background:linear-gradient(158deg,#f6ead0,#e2cfa0);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.3);
+  border-radius:10px;height:48px;line-height:1;transition:transform .08s ease,box-shadow .12s ease,background .12s;user-select:none;-webkit-tap-highlight-color:transparent;}
 .sc-np-btn:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 4px 8px rgba(0,0,0,.38);}
 .sc-np-btn:active{transform:translateY(1px) scale(.96);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 2px rgba(0,0,0,.3);}
+.sc-np-fn{background:linear-gradient(180deg,#39302400,#39302400);background:var(--raised);color:var(--ink);
+  box-shadow:none;font-family:inherit;font-size:20px;}
+.sc-np-fn:hover{background:var(--raised-2);box-shadow:none;transform:none;}
+.sc-np-fn:active{transform:scale(.96);}
+
+/* ── tool grid (home) ── */
+.sc-tools{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sc-toolcard{background:linear-gradient(180deg,#251e17,#201a13);border:1px solid var(--line);border-radius:var(--r-lg);padding:15px;cursor:pointer;
+  transition:transform .12s ease,border-color .15s,box-shadow .15s;display:flex;flex-direction:column;gap:10px;min-height:118px;text-align:left;}
+.sc-toolcard:hover{transform:translateY(-2px);border-color:#4a3b2b;box-shadow:var(--sh-2);}
+.sc-toolcard:active{transform:translateY(0);}
+.sc-toolicon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;
+  background:linear-gradient(158deg,#f6ead0,#e2cfa0);box-shadow:var(--sh-1);}
+
+/* ── crossword boxes ── */
+.sc-boxes{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.sc-box{width:44px;height:52px;border-radius:8px;border:2px solid var(--line-2);background:var(--sunk);color:var(--ink);
+  font-family:Georgia,serif;font-weight:800;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:border-color .12s,background .12s,transform .1s,box-shadow .12s;text-transform:uppercase;}
+.sc-box:active{transform:scale(.95);}
+.sc-box-filled{background:linear-gradient(158deg,#f6ead0,#e2cfa0);color:#3a2c18;border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 4px rgba(0,0,0,.35);}
+.sc-box-active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,173,63,.22);}
+
+/* ── stepper ── */
+.sc-step{display:inline-flex;align-items:center;gap:0;background:var(--sunk);border:1.5px solid var(--line-2);border-radius:12px;overflow:hidden;}
+.sc-step-btn{border:0;background:transparent;color:var(--ink);width:44px;height:44px;font-size:22px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s;}
+.sc-step-btn:hover:not(:disabled){background:var(--ov);}
+.sc-step-btn:disabled{opacity:.3;cursor:not-allowed;}
+.sc-step-val{min-width:44px;text-align:center;font-weight:800;font-size:19px;font-variant-numeric:tabular-nums;color:var(--gold);}
+
+/* ── custom keyboard ── */
+.sc-kbwrap{position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--bar-bg);border-top:1px solid var(--bar-line);
+  box-shadow:0 -6px 24px rgba(0,0,0,.6);padding:8px calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));}
+.sc-kb{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:6px;}
+.sc-kbrow{display:flex;gap:5px;justify-content:center;}
+.sc-key{flex:1;min-width:0;height:46px;border:0;border-radius:8px;background:linear-gradient(158deg,#f6ead0,#e2cfa0);color:#3a2c18;
+  font-family:Georgia,"Times New Roman",serif;font-weight:800;font-size:17px;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 3px rgba(0,0,0,.3);transition:transform .07s ease,box-shadow .1s,filter .1s;
+  -webkit-tap-highlight-color:transparent;user-select:none;display:flex;align-items:center;justify-content:center;}
+.sc-key:active{transform:translateY(1px) scale(.94);filter:brightness(.97);}
+.sc-key-fn{background:var(--raised);color:var(--ink);font-family:inherit;box-shadow:none;font-size:18px;flex:1.5;}
+.sc-key-fn:active{background:var(--raised-2);}
+.sc-key-go{background:linear-gradient(180deg,#f4cd64,#e0ad3f);color:var(--gold-ink);font-family:inherit;font-weight:800;font-size:15px;flex:2.4;gap:6px;}
+
+/* ── on-screen field (tiles + caret) ── */
+.sc-field{background:var(--sunk);border:1.5px solid var(--line-2);border-radius:var(--r);min-height:56px;padding:9px 14px;
+  display:flex;align-items:center;gap:6px;cursor:pointer;transition:border-color .15s,box-shadow .15s;flex-wrap:wrap;}
+.sc-field-active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(224,173,63,.16);}
+.sc-caret{width:2px;height:26px;background:var(--gold);border-radius:2px;animation:sc-blink 1.05s step-end infinite;}
+@keyframes sc-blink{50%{opacity:0;}}
+.sc-rimhi{color:var(--gold);}
 </style>
 </head>
 <body>
@@ -548328,12 +548465,11 @@ ZYUMYURKHACH
   "use strict";
   var KEY="scrabble:data:v1";
   var LETTER_VALUES={A:1,B:3,C:3,D:2,E:1,F:4,G:2,H:4,I:1,J:8,K:5,L:1,M:3,N:1,O:1,P:3,Q:10,R:1,S:1,T:1,U:1,V:4,W:4,X:8,Y:4,Z:10};
-  // Norwegian Scrabble tile values — used only by the word helper. Rare letters
-  // C/Q/W/X/Z have no standard Norwegian tile; scored high as in Wordfeud/ordspill.
   var NOR_VALUES={A:1,B:4,C:10,D:1,E:1,F:2,G:2,H:3,I:1,J:4,K:2,L:1,M:2,N:1,O:2,P:4,Q:10,R:1,S:1,T:1,U:4,V:4,W:8,X:10,Y:6,Z:10,'Æ':6,'Ø':5,'Å':4};
-  var VERSION='1.6.0';
+  var VERSION='3.0';
   var COLORS=["#5BA8C9","#E08A4B","#C76B98","#7BC47F","#B79CED","#A7C957","#5BC0BE","#E8775A"];
-  var lblCss="display:block;font-size:13px;font-weight:700;color:#b7a892;margin:0 2px 8px";
+  var KB_ROWS=[['Q','W','E','R','T','Y','U','I','O','P','Å'],['A','S','D','F','G','H','J','K','L','Ø','Æ'],['Z','X','C','V','B','N','M']];
+  var LETTER_RE=/[A-ZÆØÅ]/;
 
   var ICONS={
     crown:'<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
@@ -548341,6 +548477,7 @@ ZYUMYURKHACH
     plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
     trash:'<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
     arrowLeft:'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+    arrowRight:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
     chevUp:'<path d="m18 15-6-6-6 6"/>',
     chevDown:'<path d="m6 9 6 6 6-6"/>',
     undo:'<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
@@ -548355,29 +548492,33 @@ ZYUMYURKHACH
     upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
     copy:'<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/>',
     eye:'<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
-    eyeOff:'<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>'
+    eyeOff:'<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+    book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+    search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    grid:'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>',
+    sparkles:'<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+    music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    external:'<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+    grip:'<circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>',
+    sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+    moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+    monitor:'<rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>'
   };
   function ic(name,size,opts){
     size=size||18; opts=opts||{};
     var fill=opts.fill||"none",stroke=opts.stroke||"currentColor",sw=opts.sw||2,cls=opts.cls?(' class="'+opts.cls+'"'):'';
     return '<svg'+cls+' xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" style="flex:none;vertical-align:middle">'+(ICONS[name]||'')+'</svg>';
   }
-
   function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function fmtDate(ts){try{var d=new Date(ts);return d.toLocaleDateString(undefined,{day:'numeric',month:'short'})+', '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+  function fmtDate(ts){try{var d=new Date(ts);return d.toLocaleDateString('nb-NO',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+  function roundsWord(n){return n===0?'ikke startet':(n+' runde'+(n>1?'r':''));}
+  function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+  function buzz(n){if(navigator.vibrate)navigator.vibrate(n);}
 
-  /* ---- derivations ---- */
+  /* ---- derivations (scorekeeper) ---- */
   function totalsOf(g){var n=g.players.length,t=new Array(n).fill(0);g.scores.forEach(function(v,i){t[i%n]+=v;});return t;}
   function nextTurn(g){var n=g.players.length,idx=g.scores.length;return {idx:idx,player:idx%n,round:Math.floor(idx/n)};}
-  function standings(g){
-    var totals=totalsOf(g);
-    var arr=g.players.map(function(p,i){return {p:p,i:i,total:totals[i]};});
-    arr.sort(function(a,b){return b.total-a.total||a.i-b.i;});
-    var rank=0,prev=null;
-    arr.forEach(function(row,k){if(prev===null||row.total!==prev){rank=k+1;prev=row.total;}row.rank=rank;});
-    return arr;
-  }
   function leaderInfo(g){
     var totals=totalsOf(g),max=Math.max.apply(null,totals);
     var leaders=totals.map(function(t,i){return t===max?i:-1;}).filter(function(i){return i>=0;});
@@ -548386,7 +548527,7 @@ ZYUMYURKHACH
   }
   function buildExport(games){return JSON.stringify({app:"scrabble-scorekeeper",v:1,exportedAt:Date.now(),games:games},null,2);}
   function mergeGames(current,incoming){
-    var map={},order=[];
+    var map={};
     current.forEach(function(g){map[g.id]=g;});
     incoming.forEach(function(g){var ex=map[g.id];if(!ex||(g.updatedAt||0)>=(ex.updatedAt||0))map[g.id]=g;});
     var out=[];for(var k in map){if(map.hasOwnProperty(k))out.push(map[k]);}
@@ -548400,14 +548541,20 @@ ZYUMYURKHACH
     var v=(vals||LETTER_VALUES)[c];
     return '<div class="sc-tile" style="width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*0.5)+'px"><span>'+esc(c)+'</span>'+(v!=null?'<sub class="sc-tile-val" style="font-size:'+Math.round(size*0.27)+'px">'+v+'</sub>':'')+'</div>';
   }
+  function tileRow(word,size,vals,gap){
+    return '<div style="display:flex;gap:'+(gap||4)+'px;justify-content:center;flex-wrap:wrap">'+word.split('').map(function(c){return tile(c,size,vals);}).join('')+'</div>';
+  }
   function avatar(name,color,size){
     var ch=((name||'').trim()[0])||'?';
-    return '<div style="padding:2px;border-radius:'+Math.round(size*0.26)+'px;background:'+color+';display:inline-flex;flex:none">'+tile(ch,size)+'</div>';
+    return '<div style="padding:2px;border-radius:'+Math.round(size*0.28)+'px;background:'+color+';display:inline-flex;flex:none">'+tile(ch,size)+'</div>';
   }
 
-  /* ---- word helper engine ---- */
-  var ORDBOK=null, ORD_BY_LEN=null;            // decoded lazily on first use
+  /* ==================================================================
+     WORD ENGINE  (data format preserved)
+     ================================================================== */
+  var ORDBOK=null, ORD_BY_LEN=null;
   function ordbokReady(){return !!(window.SCRABBLE_ORDBOK&&window.SCRABBLE_ORDBOK.fc);}
+  function ordCount(){return ordbokReady()?(window.SCRABBLE_ORDBOK.n||0):0;}
   function decodeOrdbok(){
     if(ORDBOK)return true;
     if(!ordbokReady())return false;
@@ -548421,24 +548568,15 @@ ZYUMYURKHACH
   }
   function countLetters(s){var m={};for(var i=0;i<s.length;i++){var c=s[i];m[c]=(m[c]||0)+1;}return m;}
   function wordScore(w,vals){var s=0;for(var i=0;i<w.length;i++)s+=vals[w[i]]||0;return s;}
-  // Points if built from a rack: letters covered by a blank score 0.
   function scoreOnRack(w,have,vals){
     var need=countLetters(w),blanks=0,score=wordScore(w,vals),c;
     for(c in need){if(need.hasOwnProperty(c)){var sh=need[c]-(have[c]||0);if(sh>0){blanks+=sh;score-=sh*(vals[c]||0);}}}
     return {blanks:blanks,score:score};
   }
-  function captureHelper(){
-    var h=state.helper,e;
-    if((e=document.getElementById('helpRack')))h.rack=e.value;
-    if((e=document.getElementById('helpStarts')))h.starts=e.value;
-    if((e=document.getElementById('helpEnds')))h.ends=e.value;
-    if((e=document.getElementById('helpContains')))h.contains=e.value;
-    if((e=document.getElementById('helpPattern')))h.pattern=e.value;
-  }
+  /* Finn ord (rack) */
   function helperSearch(){
-    captureHelper();
     var h=state.helper;h.error='';h.searched=true;
-    if(!decodeOrdbok()){h.error='Ordlisten er ikke lastet ennå. Sjekk at ordbok.js ligger ved siden av index.html.';h.results=null;render();return;}
+    if(!decodeOrdbok()){h.error='Ordlisten er ikke lastet ennå.';h.results=null;render();return;}
     var clean=function(s){return (s||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');};
     var rackRaw=(h.rack||'').toUpperCase().replace(/[^A-ZÆØÅ?]/g,'');
     var starts=clean(h.starts),ends=clean(h.ends),contains=clean(h.contains);
@@ -548476,28 +548614,21 @@ ZYUMYURKHACH
     h.total=out.length;h.truncated=out.length>CAP?out.length-CAP:0;h.results=out.slice(0,CAP);
     render();
   }
-
-  /* ---- validation + external lookups ---- */
+  /* validation + lookups */
   var ORDSET=null;
   function buildSet(){if(ORDSET)return true;if(!decodeOrdbok())return false;ORDSET={};for(var i=0;i<ORDBOK.length;i++)ORDSET[ORDBOK[i]]=1;return true;}
   function isValid(w){if(!buildSet())return null;return !!ORDSET[w];}
   function naobUrl(w){return 'https://naob.no/ordbok/'+encodeURIComponent(String(w).toLowerCase());}
   function synUrl(w){return 'https://www.synonymordboka.no/no/?q='+encodeURIComponent(String(w).toLowerCase());}
   function obUrl(w){return 'https://ordbokene.no/nob/bm/'+encodeURIComponent(String(w).toLowerCase());}
-
-  /* ---- in-game word lookup ---- */
-  function captureLookup(){var e=document.getElementById('lookupInput');if(e)state.lookup.word=e.value;}
   function doLookup(){
-    captureLookup();
     var raw=(state.lookup.word||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');
     if(!raw){state.lookup.result=null;render();return;}
     state.lookup.result={word:raw,valid:isValid(raw)};
     render();
   }
-  function toggleLookup(){captureLookup();state.lookup.open=!state.lookup.open;render();}
-
-  /* ---- synonym index (Norsk Ordvev) ---- */
-  var SYN=null;   // {syn:{WORD:[..]}, cat:{WORD:[..]}}
+  /* synonym index (Norsk Ordvev) */
+  var SYN=null;
   function decodeSynvev(){
     if(SYN)return true;
     if(!(window.SCRABBLE_SYNVEV&&window.SCRABBLE_SYNVEV.blob))return false;
@@ -548518,41 +548649,26 @@ ZYUMYURKHACH
     SYN={syn:parse(parts[1]),cat:parse(parts[2])};
     return true;
   }
-
-  /* ---- crossword engine ---- */
-  function captureKryss(){
-    var k=state.kryss,e;
-    if((e=document.getElementById('kryssPattern')))k.pattern=e.value;
-    if((e=document.getElementById('kryssLen')))k.len=e.value;
-    if((e=document.getElementById('kryssContains')))k.contains=e.value;
-    if((e=document.getElementById('kryssClue')))k.clue=e.value;
-  }
+  /* crossword (box grid) */
+  function crossHasLetters(){return state.kryss.cells.some(function(c){return !!c;});}
+  function crossClue(){return (state.kryss.clue||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');}
+  function crossSearchable(){return crossClue().length>0||crossHasLetters();}
   function kryssSearch(){
-    captureKryss();
-    var k=state.kryss;k.error='';k.searched=true;
-    if(!decodeOrdbok()){k.error='Ordlisten er ikke lastet ennå.';k.results=null;render();return;}
-    var pat=(k.pattern||'').toUpperCase().replace(/[\s*?_.]/g,'.').replace(/[^A-ZÆØÅ.]/g,'');
-    var contains=(k.contains||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');
-    var clue=(k.clue||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');
-    var lenNum=parseInt(k.len,10);if(isNaN(lenNum)||lenNum<0)lenNum=0;
-    var hasPat=pat.length>0;
-    if(!hasPat&&!contains&&!lenNum&&!clue){k.error='Skriv en ledetråd, et mønster (f.eks. K_YSS_RD), en lengde, eller «inneholder».';k.results=null;render();return;}
-    var patRe=hasPat?new RegExp('^'+pat+'$'):null;
-    var targetLen=hasPat?pat.length:lenNum;
-    function pass(w){
-      if(patRe&&!patRe.test(w))return false;
-      if(targetLen&&w.length!==targetLen)return false;
-      if(contains&&w.indexOf(contains)<0)return false;
-      return true;
-    }
+    var k=state.kryss;k.error='';
+    if(!decodeOrdbok()){k.error='Ordlisten er ikke lastet ennå.';k.results=null;k.searched=true;render();return;}
+    var clue=crossClue(),count=k.count|0;
+    if(!crossSearchable()){k.results=null;k.searched=false;render();return;}
+    k.searched=true;
+    var pat=k.cells.map(function(c){return c?c:'.';}).join('');
+    var patRe=new RegExp('^'+pat+'$');
+    function pass(w){return w.length===count&&patRe.test(w);}
     var CAP=400;
     if(clue&&decodeSynvev()){
-      // clue mode: candidates from the synonym/category index, filtered by pattern
       var syns=(SYN.syn[clue]||[]).filter(pass);
       var cats=(SYN.cat[clue]||[]).filter(pass);
       var seen={};syns.forEach(function(w){seen[w]=1;});
       cats=cats.filter(function(w){return !seen[w];});
-      syns.sort();cats.sort(function(a,b){return a.length-b.length||(a<b?-1:1);});
+      syns.sort();cats.sort(function(a,b){return (a<b?-1:1);});
       var known=!!(SYN.syn[clue]||SYN.cat[clue]);
       k.total=syns.length+cats.length;
       k.truncated=Math.max(0,k.total-CAP);
@@ -548560,197 +548676,429 @@ ZYUMYURKHACH
       render();return;
     }
     if(clue){k.error='Synonymdata er ikke lastet ennå.';k.results=null;render();return;}
-    var out=[];
-    function consider(w){if(pass(w))out.push(w);}
-    if(targetLen){var b=ORD_BY_LEN[targetLen];if(b)for(var i=0;i<b.length;i++)consider(b[i]);}
-    else {for(var j=0;j<ORDBOK.length;j++)consider(ORDBOK[j]);}
-    out.sort(function(a,b){return a.length-b.length||(a<b?-1:1);});
+    var b=ORD_BY_LEN[count]||[],out=[];
+    for(var i=0;i<b.length;i++){if(pass(b[i]))out.push(b[i]);}
+    out.sort();
     k.total=out.length;k.truncated=out.length>CAP?out.length-CAP:0;
     k.results={mode:'pattern',words:out.slice(0,CAP)};
     render();
   }
+  /* rhyme finder */
+  var VOWELS='AEIOUYÆØÅ';
+  function syllables(w){var n=0,prev=false;for(var i=0;i<w.length;i++){var isV=VOWELS.indexOf(w[i])>=0;if(isV&&!prev)n++;prev=isV;}return n||1;}
+  function sortRim(arr,mode){
+    if(mode==='syl')arr.sort(function(a,b){return a.s-b.s||b.k-a.k||a.w.length-b.w.length||(a.w<b.w?-1:1);});
+    else arr.sort(function(a,b){return b.k-a.k||a.w.length-b.w.length||(a.w<b.w?-1:1);});
+  }
+  function rimSearch(){
+    var r=state.rim;r.error='';r.searched=true;
+    if(!decodeOrdbok()){r.error='Ordlisten er ikke lastet ennå.';r.results=null;render();return;}
+    var w=(r.word||'').toUpperCase().replace(/[^A-ZÆØÅ]/g,'');
+    if(w.length<2){r.error='Skriv et ord på minst to bokstaver.';r.results=null;render();return;}
+    var suf2=w.slice(-2),out=[];
+    for(var i=0;i<ORDBOK.length;i++){
+      var x=ORDBOK[i];
+      if(x===w||x.length<2||x.slice(-2)!==suf2)continue;
+      var kk=0,la=x.length,lb=w.length,mx=la<lb?la:lb;
+      while(kk<mx&&x[la-1-kk]===w[lb-1-kk])kk++;
+      out.push({w:x,k:kk,s:syllables(x)});
+    }
+    // choose the best 200 rhymes by shared ending, then apply the chosen sort
+    out.sort(function(a,b){return b.k-a.k||a.w.length-b.w.length||(a.w<b.w?-1:1);});
+    r.total=out.length;var CAP=200;r.truncated=Math.max(0,out.length-CAP);
+    var top=out.slice(0,CAP);
+    sortRim(top,r.sort||'best');
+    r.results=top;
+    render();
+  }
+  function rimSort(mode){var r=state.rim;r.sort=mode;if(r.results)sortRim(r.results,mode);render();}
 
-  /* ---- state ---- */
-  var state={games:[],view:{name:'home',id:null},setup:{name:'',players:[]},renaming:false,modal:null,backup:null,importErr:'',editScore:null,exportText:'',
-    helper:{rack:'',starts:'',ends:'',contains:'',pattern:'',useAll:false,adv:false,results:null,searched:false,error:'',total:0,truncated:0},
-    lookup:{word:'',result:null,open:false},
-    kryss:{pattern:'',len:'',contains:'',clue:'',results:null,searched:false,error:'',total:0,truncated:0,adv:false}};
-  var numInput='';      // current numpad entry (main game)
-  var editNumInput='';  // current numpad entry (edit modal)
-  var prevPage='';      // tracks last rendered page to control fadein
+  /* ==================================================================
+     STATE
+     ================================================================== */
+  var state={
+    games:[], view:{name:'tools',id:null}, setup:{name:'',players:[],hidden:false},
+    renaming:false, modal:null, backup:null, importErr:'', editScore:null, exportText:'',
+    tab:'find', toolsRet:null,
+    helper:{rack:'',starts:'',ends:'',contains:'',pattern:'',useAll:false,adv:false,field:'rack',results:null,searched:false,error:'',total:0,truncated:0},
+    lookup:{word:'',result:null},
+    rim:{word:'',sort:'best',results:null,searched:false,error:'',total:0,truncated:0},
+    kryss:{clue:'',count:5,cells:['','','','',''],active:0,focus:'clue',results:null,searched:false,error:'',total:0,truncated:0}
+  };
+  var numInput='';
+  var editNumInput='';
+  var prevPage='';
   var toastTimer=null;
   var app=document.getElementById('app');
+
+  /* ---- theme (system / light / dark) ---- */
+  var THEME_KEY='ordsmed:theme';
+  var theme='system';
+  function loadTheme(){try{var t=localStorage.getItem(THEME_KEY);if(t==='light'||t==='dark'||t==='system')theme=t;}catch(e){}}
+  function applyTheme(){var el=document.documentElement;if(theme==='system')el.removeAttribute('data-theme');else el.setAttribute('data-theme',theme);}
+  function cycleTheme(){theme=theme==='system'?'light':(theme==='light'?'dark':'system');try{localStorage.setItem(THEME_KEY,theme);}catch(e){}applyTheme();render();}
+  function themeIcon(){return theme==='light'?'sun':(theme==='dark'?'moon':'monitor');}
+  function themeTitle(){return theme==='light'?'Tema: lyst':(theme==='dark'?'Tema: mørkt':'Tema: følger systemet');}
   function currentGame(){for(var i=0;i<state.games.length;i++){if(state.games[i].id===state.view.id)return state.games[i];}return null;}
   function load(){try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(p&&Array.isArray(p.games))state.games=p.games;}}catch(e){}}
   function save(){try{localStorage.setItem(KEY,JSON.stringify({v:1,games:state.games}));}catch(e){}}
 
-  /* ---- main numpad ---- */
-  function updateDisplay(){
-    var el=document.querySelector('.sc-np-display');
-    if(!el)return;
-    el.textContent=numInput||'0';
-    el.classList.toggle('sc-np-filled',!!numInput);
+  /* ==================================================================
+     ON-SCREEN KEYBOARD
+     ================================================================== */
+  function keyboard(o){
+    var html='<div class="sc-kbwrap"><div class="sc-kb">';
+    KB_ROWS.forEach(function(row){
+      html+='<div class="sc-kbrow">'+row.map(function(c){return '<button class="sc-key" data-action="kb-key" data-k="'+c+'">'+c+'</button>';}).join('')+'</div>';
+    });
+    html+='<div class="sc-kbrow">'
+      +'<button class="sc-key sc-key-fn" data-action="kb-back" title="Slett">⌫</button>'
+      +(o.blank?'<button class="sc-key sc-key-fn" data-action="kb-blank" title="Blank brikke">?</button>':'')
+      +(o.wild?'<button class="sc-key sc-key-fn" data-action="kb-wild" title="Vilkårlig bokstav">•</button>':'')
+      +'<button class="sc-key sc-key-go" data-action="kb-go">'+ic('search',16)+' '+esc(o.go)+'</button>'
+    +'</div></div></div>';
+    return html;
   }
-  function npDigit(d){
-    if(navigator.vibrate)navigator.vibrate(8);
-    var digits=numInput.replace('-','');
-    if(digits.length>=4)return;
-    if(!numInput&&d==='0')return;
-    numInput+=d;
-    updateDisplay();
+  // Fast path: repaint only the active field's tiles/caret (no full re-render) so typing stays snappy.
+  function paintField(){
+    var el=document.querySelector('.sc-field-active');if(!el)return false;
+    var t=state.tab,txt,vals;
+    if(t==='find'){var f=state.helper.field||'rack';txt=state.helper[f]||'';vals=(f==='rack')?NOR_VALUES:false;}
+    else if(t==='rim'){txt=state.rim.word||'';vals=null;}
+    else if(t==='lookup'){txt=state.lookup.word||'';vals=NOR_VALUES;}
+    else return false;
+    el.innerHTML=fieldDisp(txt,'',true,vals);return true;
   }
-  function npDel(){
-    numInput=numInput.slice(0,-1);
-    if(numInput==='-')numInput='';
-    updateDisplay();
+  function kbKey(c){
+    buzz(6);var t=state.tab;
+    if(t==='find'){var f=state.helper.field||'rack',cur=state.helper[f]||'',cap=f==='rack'?12:15;if(cur.replace(/[^A-ZÆØÅ]/g,'').length<cap){state.helper[f]=cur+c;paintField();}return;}
+    if(t==='rim'){if(state.rim.word.length<20){state.rim.word+=c;paintField();}return;}
+    if(t==='lookup'){if(state.lookup.word.length<20){state.lookup.word+=c;paintField();}return;}
+    var k=state.kryss;
+    if(k.focus==='clue'){if(k.clue.length<24)k.clue+=c;crossSearchable()?kryssSearch():render();return;}
+    k.cells[k.active]=c;if(k.active<k.count-1)k.active++;crossSearchable()?kryssSearch():render();
   }
-  function npSign(){
-    var digits=numInput.replace('-','');
-    if(!digits)return;
-    numInput=numInput[0]==='-'?digits:'-'+digits;
-    updateDisplay();
+  function kbBlank(){if(state.tab==='find'&&(state.helper.field||'rack')==='rack'){buzz(6);if(state.helper.rack.replace(/[^A-ZÆØÅ?]/g,'').length<12){state.helper.rack+='?';paintField();}}}
+  function kbWild(){if(state.tab==='find'&&state.helper.field==='pattern'){buzz(6);if((state.helper.pattern||'').length<15){state.helper.pattern+='.';paintField();}}}
+  function kbBack(){
+    var t=state.tab;
+    if(t==='find'){var f=state.helper.field||'rack';state.helper[f]=(state.helper[f]||'').slice(0,-1);state.helper[f]?paintField():render();return;}
+    if(t==='rim'){state.rim.word=state.rim.word.slice(0,-1);state.rim.word?paintField():render();return;}
+    if(t==='lookup'){state.lookup.word=state.lookup.word.slice(0,-1);state.lookup.word?paintField():render();return;}
+    var k=state.kryss;
+    if(k.focus==='clue'){k.clue=k.clue.slice(0,-1);}
+    else{if(k.cells[k.active]){k.cells[k.active]='';}else if(k.active>0){k.active--;k.cells[k.active]='';}}
+    crossSearchable()?kryssSearch():(function(){k.results=null;k.searched=false;render();})();
+  }
+  function kbGo(){var t=state.tab;if(t==='find')helperSearch();else if(t==='rim')rimSearch();else if(t==='lookup')doLookup();else kryssSearch();}
+  function goLabel(){return state.tab==='lookup'?'Sjekk':state.tab==='rim'?'Finn rim':state.tab==='cross'?'Søk':'Finn ord';}
+
+  /* on-screen field display (tiles + caret) */
+  function fieldDisp(text,ph,active,vals){
+    if(!text)return '<span style="color:var(--ink-4);font-size:15px">'+esc(ph)+'</span>';
+    if(vals===false)return '<span style="font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase">'+esc(text)+'</span>'+(active?'<span class="sc-caret"></span>':'');
+    return text.split('').map(function(c){return tile(c,26,vals);}).join('')+(active?'<span class="sc-caret"></span>':'');
   }
 
-  /* ---- edit numpad ---- */
-  function updateEditDisplay(){
-    var el=document.getElementById('editNpDisplay');
-    if(!el)return;
-    el.textContent=editNumInput||'0';
-    el.classList.toggle('sc-np-filled',!!editNumInput);
-  }
-  function editNpDigit(d){
-    if(navigator.vibrate)navigator.vibrate(8);
-    var digits=editNumInput.replace('-','');
-    if(digits.length>=4)return;
-    if(!editNumInput&&d==='0')return;
-    editNumInput+=d;
-    updateEditDisplay();
-  }
-  function editNpDel(){
-    editNumInput=editNumInput.slice(0,-1);
-    if(editNumInput==='-')editNumInput='';
-    updateEditDisplay();
-  }
-  function editNpSign(){
-    var digits=editNumInput.replace('-','');
-    if(!digits)return;
-    editNumInput=editNumInput[0]==='-'?digits:'-'+digits;
-    updateEditDisplay();
-  }
-  function editNumpadHTML(){
-    return '<div class="sc-np-display'+(editNumInput?' sc-np-filled':'')+'" id="editNpDisplay">'+(editNumInput||'0')+'</div>'
-      +'<div class="sc-np" style="margin-bottom:4px">'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="1">1</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="2">2</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="3">3</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="4">4</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="5">5</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="6">6</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="7">7</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="8">8</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="9">9</button>'
-        +'<button class="sc-np-btn" data-action="edit-np-digit" data-d="0">0</button>'
-      +'</div>'
-      +'<div style="display:flex;gap:6px;margin-top:8px">'
-        +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:17px" data-action="edit-np-del" title="Backspace">⌫</button>'
-        +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:16px;font-weight:800" data-action="edit-np-sign" title="Toggle negative">±</button>'
-      +'</div>';
-  }
+  /* ==================================================================
+     VIEWS — home + tools
+     ================================================================== */
+  function backBtn(action,label){return '<button class="sc-btn sc-ghost" style="margin-left:-8px;margin-bottom:14px" data-action="'+action+'">'+ic('arrowLeft',18)+' '+esc(label)+'</button>';}
 
-  /* ---- views ---- */
   function gameCard(g){
     var lead=leaderInfo(g);
     var rounds=Math.ceil(g.scores.length/g.players.length);
     var avs=g.players.slice(0,6).map(function(p,i){return '<span style="margin-left:'+(i===0?0:-8)+'px">'+avatar(p.name,COLORS[i%COLORS.length],26)+'</span>';}).join('');
     var hide=g.hidden&&!g.finished;
     var leadHtml=hide
-      ? '<div style="display:flex;align-items:center;gap:6px;color:#8a7c69;font-weight:700;font-size:13px">'+ic('eyeOff',15,{stroke:'#8a7c69'})+'Scores hidden</div>'
+      ? '<div style="display:flex;align-items:center;gap:6px;color:var(--ink-3);font-weight:700;font-size:13px">'+ic('eyeOff',15,{stroke:'#8a7c69'})+'Skjulte poeng</div>'
       : lead.played
-      ? '<div style="display:flex;align-items:center;gap:6px;color:#f0c052;font-weight:700;font-size:14px">'+ic('crown',15,{fill:'#f0c052',stroke:'#f0c052',sw:1.5})+(lead.unique?esc(g.players[lead.index].name)+' · '+lead.max:'Tied · '+lead.max)+'</div>'
-      : '<span style="color:#6f6354;font-size:13px">No scores yet</span>';
-    return '<div class="sc-card" style="padding:16px;cursor:pointer" data-action="open-game" data-id="'+g.id+'">'
+      ? '<div style="display:flex;align-items:center;gap:6px;color:#f0c052;font-weight:700;font-size:14px">'+ic('crown',15,{fill:'#f0c052',stroke:'#f0c052',sw:1.5})+(lead.unique?esc(g.players[lead.index].name)+' · '+lead.max:'Uavgjort · '+lead.max)+'</div>'
+      : '<span style="color:var(--ink-4);font-size:13px">Ingen poeng ennå</span>';
+    return '<div class="sc-card sc-press" style="padding:16px" data-action="open-game" data-id="'+g.id+'">'
       +'<div style="display:flex;justify-content:space-between;gap:12px">'
         +'<div style="min-width:0">'
           +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
             +'<span style="font-weight:800;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(g.name)+'</span>'
-            +'<span class="sc-chip '+(g.finished?'sc-chip-done':'sc-chip-live')+'">'+(g.finished?'Final':'In play')+'</span>'
+            +'<span class="sc-chip '+(g.finished?'sc-chip-done':'sc-chip-live')+'">'+(g.finished?'Ferdig':'Spilles')+'</span>'
           +'</div>'
-          +'<div style="color:#8a7c69;font-size:13px">'+g.players.length+' players · '+(rounds===0?'not started':rounds+' round'+(rounds>1?'s':''))+' · '+esc(fmtDate(g.updatedAt))+'</div>'
+          +'<div style="color:var(--ink-3);font-size:13px">'+g.players.length+' spillere · '+roundsWord(rounds)+' · '+esc(fmtDate(g.updatedAt))+'</div>'
         +'</div>'
-        +'<button class="sc-icon sc-icon-danger" data-action="delete-game" data-id="'+g.id+'" data-name="'+esc(g.name)+'" title="Delete game">'+ic('trash',17)+'</button>'
+        +'<button class="sc-icon sc-icon-danger" data-action="delete-game" data-id="'+g.id+'" data-name="'+esc(g.name)+'" title="Slett spill">'+ic('trash',17)+'</button>'
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap"><div style="display:flex">'+avs+'</div>'+leadHtml+'</div>'
     +'</div>';
   }
 
-  function viewHome(fade){
-    var games=state.games, list;
+  function viewGames(fade){
+    var games=state.games,list;
     if(games.length===0){
-      list='<div class="sc-panel" style="padding:44px 24px;text-align:center">'
-        +'<div style="display:flex;gap:5px;justify-content:center;margin-bottom:16px;opacity:.9">'+'PLAY'.split('').map(function(c){return tile(c,38);}).join('')+'</div>'
-        +'<div style="font-weight:700;font-size:17px;margin-bottom:6px">No games yet</div>'
-        +'<div style="color:#8a7c69;font-size:14px;margin-bottom:20px">Start one, add your players, and keep score round by round.</div>'
-        +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' New game</button></div>';
+      list='<div class="sc-panel" style="padding:40px 24px;text-align:center">'
+        +'<div style="margin-bottom:16px;opacity:.95">'+tileRow('SPILL',34,LETTER_VALUES,5)+'</div>'
+        +'<div style="font-weight:800;font-size:17px;margin-bottom:6px">Ingen spill ennå</div>'
+        +'<div style="color:var(--ink-3);font-size:14px;margin-bottom:20px">Før poeng runde for runde — for et hvilket som helst ordspill.</div>'
+        +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' Nytt spill</button></div>';
     } else {
-      list='<div style="display:grid;gap:12px">'+games.map(gameCard).join('')+'</div>';
+      list='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px">'
+        +'<h2 style="font-size:15px;font-weight:800">Dine spill</h2>'
+        +'<button class="sc-btn sc-gold sc-sm" data-action="new-game">'+ic('plus',16)+' Nytt spill</button>'
+      +'</div><div style="display:grid;gap:12px">'+games.map(gameCard).join('')+'</div>';
     }
     return '<div class="wrap'+(fade?' fadein':'')+'">'
-      +'<header style="margin-bottom:16px">'
-        +'<div style="margin-bottom:12px">'
-          +'<div style="display:flex;gap:4px;flex-wrap:nowrap;justify-content:center">'+'SCRABBLE'.split('').map(function(c){return tile(c,30);}).join('')+'</div>'
-          +'<div style="text-align:center;margin-top:6px;font-size:11px;letter-spacing:1px;color:#8a7c68">v'+VERSION+'</div>'
-        +'</div>'
-        +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">'
-          +'<p style="color:#b7a892;font-size:15px;margin:0">Scorekeeper</p>'
-          +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-            +'<button class="sc-btn sc-soft" data-action="open-helper">'+ic('hash',18)+' Ordhjelper</button>'
-            +'<button class="sc-btn sc-soft" data-action="open-kryss">'+ic('hash',18)+' Kryssord</button>'
-            +'<button class="sc-btn sc-gold" data-action="new-game">'+ic('plus',18)+' New game</button>'
-          +'</div>'
-        +'</div>'
-      +'</header>'
-      +'<div class="storebar">'
-        +'<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#9a8b73;min-width:0"><span class="sc-dot" style="background:#7BC47F"></span> Saved on this device</div>'
+      +backBtn('games-back','Ordbok')
+      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 4px">Spill</h1>'
+      +'<p style="color:var(--ink-3);font-size:14px;margin:0 0 20px">Poengfører for et hvilket som helst ordspill</p>'
+      +list
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:26px;padding-top:16px;border-top:1px solid var(--line)">'
+        +'<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-3)"><span class="sc-dot" style="background:#7BC47F"></span> Lagret på denne enheten</div>'
         +'<div style="display:flex;gap:6px">'
-          +'<button class="sc-btn sc-ghost sc-sm" data-action="export-open"'+(games.length?'':' disabled')+'>'+ic('download',15)+' Back up</button>'
-          +'<button class="sc-btn sc-ghost sc-sm" data-action="import-open">'+ic('upload',15)+' Restore</button>'
+          +'<button class="sc-btn sc-ghost sc-sm" data-action="export-open"'+(games.length?'':' disabled')+'>'+ic('download',15)+' Kopi</button>'
+          +'<button class="sc-btn sc-ghost sc-sm" data-action="import-open">'+ic('upload',15)+' Gjenopprett</button>'
         +'</div>'
       +'</div>'
-      +list
+      +'<div style="text-align:center;margin-top:18px;font-size:11px;letter-spacing:1px;color:var(--ink-4)">Ordsmed v'+VERSION+'</div>'
     +'</div>';
   }
 
+  function emptyState(iconHtml,title,body){
+    return '<div class="sc-panel" style="padding:26px 20px;text-align:center;color:var(--ink-3)">'
+      +(iconHtml?'<div style="margin-bottom:14px;opacity:.9">'+iconHtml+'</div>':'')
+      +'<div style="font-weight:800;font-size:16px;margin-bottom:6px;color:var(--ink-2)">'+title+'</div>'+body+'</div>';
+  }
+  function resultHead(count,extra){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px">'
+      +'<div class="eyebrow" style="display:flex;align-items:center;gap:6px;color:var(--ink-3)">'+ic('check',14,{stroke:'#7BC47F'})+count+' treff</div>'
+      +(extra?'<div style="font-size:12px;color:var(--ink-4)">'+extra+'</div>':'')+'</div>';
+  }
+  function moreNote(n,hint){return n?'<div style="text-align:center;font-size:12px;color:var(--ink-4);margin-top:12px">+ '+n+' flere skjult · '+hint+'</div>':'';}
+
+  /* --- Finn ord --- */
+  function tabFind(){
+    var h=state.helper,results;
+    if(h.error){results='<div class="sc-panel" style="padding:16px;color:var(--bad);font-size:14px">'+esc(h.error)+'</div>';}
+    else if(h.searched&&h.results){
+      if(h.results.length===0){results=emptyState('',"Ingen ord",'Fant ingen gyldige ord. Prøv andre brikker.');}
+      else{
+        results=resultHead(h.total,h.truncated?('viser topp '+h.results.length):'')
+          +'<div style="display:grid;gap:7px">'+h.results.map(function(r){
+            var tiles='';for(var i=0;i<r.w.length;i++)tiles+=tile(r.w[i],24,NOR_VALUES);
+            return '<div class="sc-card" style="padding:9px 11px;display:flex;align-items:center;gap:10px">'
+              +'<div style="display:flex;gap:2px;flex-wrap:wrap;flex:1;min-width:0">'+tiles+'</div>'
+              +(r.blanks?'<span style="font-size:11px;color:var(--ink-3);flex:none">'+r.blanks+'&nbsp;blank</span>':'')
+              +'<div class="sc-total" style="height:auto;padding:5px 11px;min-width:34px;flex:none">'+r.score+'</div></div>';
+          }).join('')+'</div>'+moreNote(h.truncated,'legg til flere brikker for å snevre inn');
+      }
+    } else { results=emptyState(tileRow('ORD',34,NOR_VALUES,4),"Finn ord fra brikkene dine",'Trykk bokstavene du har på ordtastaturet under — vi finner alle gyldige ord, sortert etter poeng. Trykk «Avansert» for å begynne på / slutte på / mønster.'); }
+    if(!h.adv&&h.field&&h.field!=='rack')h.field='rack';
+    var af=h.field||'rack';
+    var anyInput=h.rack||h.starts||h.ends||h.contains||h.pattern;
+    var advField=function(name,label,ph){return '<div><label class="sc-label" style="margin-bottom:5px">'+label+'</label>'
+      +'<div class="sc-field'+(af===name?' sc-field-active':'')+'" style="min-height:48px;padding:8px 12px" data-action="focus-field" data-f="'+name+'">'+fieldDisp(h[name],ph,af===name,false)+'</div></div>';};
+    var adv='';
+    if(h.adv){
+      adv='<div style="display:grid;gap:10px;margin-top:14px">'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+advField('starts','Begynner med','f.eks. FOR')+advField('ends','Slutter på','f.eks. ING')+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+advField('contains','Inneholder','f.eks. XY')+advField('pattern','Mønster','B••T')+'</div>'
+        +'<div style="font-size:11.5px;color:var(--ink-4)">Filtrene virker med eller uten brikker. I «Mønster» betyr • en vilkårlig bokstav (bruk •-tasten).</div>'
+      +'</div>';
+    }
+    return '<label class="sc-label">Brikkene dine <span class="opt">· bruk ? for blank</span></label>'
+      +'<div class="sc-field'+(af==='rack'?' sc-field-active':'')+'" data-action="focus-field" data-f="rack">'+fieldDisp(h.rack,'Trykk bokstavene dine…',af==='rack',NOR_VALUES)+'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">'
+        +'<button class="sc-btn '+(h.useAll?'sc-gold':'sc-soft')+' sc-sm" data-action="helper-toggle-all" aria-pressed="'+(h.useAll?'true':'false')+'">'+(h.useAll?'✓ ':'')+'Bruk alle</button>'
+        +'<button class="sc-btn '+(h.adv?'sc-gold':'sc-ghost')+' sc-sm" data-action="helper-toggle-adv" aria-pressed="'+(h.adv?'true':'false')+'">'+ic(h.adv?'chevUp':'chevDown',15)+' Avansert</button>'
+        +(anyInput?'<button class="sc-btn sc-ghost sc-sm" data-action="field-clear" style="margin-left:auto">Tøm alt</button>':'')
+      +'</div>'+adv
+      +'<div style="margin-top:18px">'+results+'</div>'
+      +'<div style="font-size:11.5px;color:var(--ink-4);margin:16px 2px 0;line-height:1.5">Ordliste: Norsk Ordbank (Språkbanken / UiB, CC-BY 4.0). Poeng er grunnpoeng uten bonusruter; blanke brikker teller 0.</div>';
+  }
+
+  /* --- Kryssord (box grid) --- */
+  function kryssRow(w){
+    return '<div class="sc-card" style="padding:9px 12px;display:flex;align-items:center;gap:10px">'
+      +'<span style="flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(w)+'</span>'
+      +'<a class="sc-btn sc-ghost sc-sm" style="text-decoration:none;flex:none" href="'+naobUrl(w)+'" target="_blank" rel="noopener">NAOB '+ic('external',13)+'</a></div>';
+  }
+  function tabCross(){
+    var k=state.kryss,r=k.results,results;
+    if(k.error){results='<div class="sc-panel" style="padding:16px;color:var(--bad);font-size:14px">'+esc(k.error)+'</div>';}
+    else if(k.searched&&r&&r.mode==='clue'){
+      var cw=r.clue,secs='';
+      if(!r.known){
+        secs=emptyState('','Ukjent ledetråd','«'+esc(cw)+'» finnes ikke i synonymdataene. Prøv grunnformen, eller søk eksternt:'
+          +'<div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;justify-content:center">'
+          +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+synUrl(cw)+'" target="_blank" rel="noopener">Synonymordboka '+ic('external',13)+'</a>'
+          +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+naobUrl(cw)+'" target="_blank" rel="noopener">NAOB '+ic('external',13)+'</a></div>');
+      } else if(r.syns.length===0&&r.cats.length===0){
+        secs=emptyState('','Ingen treff','«'+esc(cw)+'» har svar, men ingen på '+k.count+' bokstaver som passer rutene. Endre antall eller fjern en bokstav.');
+      } else {
+        var sect=function(title,words){if(!words.length)return '';
+          return '<div class="eyebrow" style="margin:14px 2px 8px;display:flex;align-items:center;gap:6px;color:var(--ink-3)">'+ic('check',14,{stroke:'#7BC47F'})+title+' · '+words.length+'</div>'
+            +'<div style="display:grid;gap:7px">'+words.map(kryssRow).join('')+'</div>';};
+        secs=sect('Synonymer',r.syns)+sect('Eksempler på «'+esc(cw)+'»',r.cats)+moreNote(k.truncated,'fyll inn flere bokstaver');
+      }
+      results=secs;
+    } else if(k.searched&&r&&r.mode==='pattern'){
+      if(r.words.length===0){results=emptyState('','Ingen treff','Ingen ord på '+k.count+' bokstaver passer rutene. Sjekk bokstavene du har låst.');}
+      else{results=resultHead(k.total,k.truncated?('viser '+r.words.length):'')+'<div style="display:grid;gap:7px">'+r.words.map(kryssRow).join('')+'</div>'+moreNote(k.truncated,'fyll inn flere bokstaver eller skriv en ledetråd');}
+    } else {
+      results=emptyState('','Slik gjør du','1) skriv en ledetråd (valgfritt) · 2) velg antall bokstaver · 3) trykk rutene du kjenner og fyll inn med tastaturet. Tomme ruter = ukjent.');
+    }
+    var boxes='';
+    for(var i=0;i<k.count;i++){
+      var c=k.cells[i]||'';
+      boxes+='<button class="sc-box'+(c?' sc-box-filled':'')+(k.focus==='cell'&&i===k.active?' sc-box-active':'')+'" data-action="kryss-box" data-i="'+i+'">'+esc(c)+'</button>';
+    }
+    return '<label class="sc-label">Ledetråd <span class="opt">· synonym/kategori, valgfritt</span></label>'
+      +'<div class="sc-field'+(k.focus==='clue'?' sc-field-active':'')+'" data-action="focus-field" data-f="clue">'+fieldDisp(k.clue,'Trykk for å skrive ledetråd…',k.focus==='clue',null)+'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 2px 10px">'
+        +'<label class="sc-label" style="margin:0">Antall bokstaver</label>'
+        +'<div class="sc-step"><button class="sc-step-btn" data-action="kryss-count" data-d="-1"'+(k.count<=2?' disabled':'')+'>−</button>'
+          +'<span class="sc-step-val">'+k.count+'</span>'
+          +'<button class="sc-step-btn" data-action="kryss-count" data-d="1"'+(k.count>=15?' disabled':'')+'>+</button></div>'
+      +'</div>'
+      +'<div class="sc-boxes" style="margin:14px 0">'+boxes+'</div>'
+      +(crossHasLetters()||k.clue?'<div style="text-align:center;margin-bottom:4px"><button class="sc-btn sc-ghost sc-sm" data-action="kryss-reset">'+ic('rotate',14)+' Nullstill</button></div>':'')
+      +'<div style="margin-top:14px">'+results+'</div>'
+      +'<div style="font-size:11.5px;color:var(--ink-4);margin:16px 2px 0;line-height:1.5">Synonymer og kategorier: Norsk Ordvev (Språkbanken / Nasjonalbiblioteket, CC-BY). Alt søkes lokalt.</div>';
+  }
+
+  /* --- Rim --- */
+  function rimRow(it){
+    var w=it.w,tail=w.slice(w.length-it.k),head=w.slice(0,w.length-it.k);
+    return '<div class="sc-card" style="padding:10px 13px;display:flex;align-items:center;gap:10px">'
+      +'<span style="flex:1;min-width:0;font-size:17px;font-weight:700;letter-spacing:1px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(head)+'<span class="sc-rimhi">'+esc(tail)+'</span></span>'
+      +'<span style="font-size:11px;color:var(--ink-4);flex:none" title="Stavelser">'+it.s+' stav.</span>'
+      +'<a class="sc-btn sc-ghost sc-sm" style="text-decoration:none;flex:none" href="'+naobUrl(w)+'" target="_blank" rel="noopener">NAOB '+ic('external',13)+'</a></div>';
+  }
+  function tabRim(){
+    var r=state.rim,results,hasRes=r.searched&&r.results&&r.results.length>0;
+    if(r.error){results='<div class="sc-panel" style="padding:16px;color:var(--bad);font-size:14px">'+esc(r.error)+'</div>';}
+    else if(r.searched&&r.results){
+      if(r.results.length===0){results=emptyState('','Ingen rim','Fant ingen rimord. Prøv et annet ord.');}
+      else{
+        var body;
+        if(r.sort==='syl'){
+          var groups={},order=[];
+          r.results.forEach(function(it){if(!groups[it.s]){groups[it.s]=[];order.push(it.s);}groups[it.s].push(it);});
+          order.sort(function(a,b){return a-b;});
+          body=order.map(function(s){
+            return '<div class="eyebrow" style="margin:14px 2px 8px;color:var(--ink-3)">'+s+' stavelse'+(s>1?'r':'')+' · '+groups[s].length+'</div>'
+              +'<div style="display:grid;gap:7px">'+groups[s].map(rimRow).join('')+'</div>';
+          }).join('');
+        } else {
+          body='<div style="display:grid;gap:7px">'+r.results.map(rimRow).join('')+'</div>';
+        }
+        results=resultHead(r.total,r.truncated?('viser topp '+r.results.length):'')+body
+          +moreNote(r.truncated,r.sort==='syl'?'gruppert etter stavelser':'de beste rimene vises først');
+      }
+    } else { results=emptyState(tileRow('RIM',34,NOR_VALUES,4),"Finn rimord",'Skriv et ord på ordtastaturet — vi finner ord med samme endelse. Sorter etter beste rim eller antall stavelser. (Rim er basert på skrivemåte.)'); }
+    var sortCtl=hasRes?('<div style="display:flex;gap:6px;margin:16px 2px 0;align-items:center">'
+      +'<span style="font-size:12.5px;color:var(--ink-3);margin-right:2px">Sorter:</span>'
+      +'<button class="sc-btn '+(r.sort!=='syl'?'sc-gold':'sc-soft')+' sc-sm" data-action="rim-sort" data-m="best">Beste rim</button>'
+      +'<button class="sc-btn '+(r.sort==='syl'?'sc-gold':'sc-soft')+' sc-sm" data-action="rim-sort" data-m="syl">Stavelser</button>'
+    +'</div>'):'';
+    return '<div class="sc-field sc-field-active" data-action="focus-field" data-f="word">'+fieldDisp(r.word,'Trykk ordet du vil rime på…',true,null)+'</div>'
+      +(r.word?'<div style="display:flex;margin-top:12px"><button class="sc-btn sc-ghost sc-sm" data-action="field-clear" style="margin-left:auto">Tøm</button></div>':'')
+      +sortCtl
+      +'<div style="margin-top:14px">'+results+'</div>'
+      +'<div style="font-size:11.5px;color:var(--ink-4);margin:16px 2px 0;line-height:1.5">Rim finnes ved å matche ordets endelse i Norsk Ordbank. Norsk er nesten lydrett, så treffene rimer som regel også når de uttales.</div>';
+  }
+
+  /* --- Slå opp --- */
+  function tabLookup(){
+    var lu=state.lookup,body;
+    if(lu.result){
+      var ok=lu.result.valid,w=lu.result.word;
+      body='<div style="margin-top:18px">'
+        +'<div style="display:flex;justify-content:center;margin-bottom:12px">'+tileRow(w,30,NOR_VALUES,4)+'</div>'
+        +'<div style="display:flex;justify-content:center;margin-bottom:14px">'
+          +(ok===null?'<span style="color:var(--ink-3);font-size:13px">Ordlisten laster…</span>'
+            :ok?'<span class="sc-chip" style="background:rgba(123,196,127,.16);color:var(--good-ink);font-size:13px;padding:6px 14px">'+ic('check',15)+' Gyldig ord</span>'
+                :'<span class="sc-chip" style="background:rgba(230,145,127,.16);color:var(--bad);font-size:13px;padding:6px 14px">'+ic('x',15)+' Ikke i ordlista</span>')+'</div>'
+        +'<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">'
+          +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+naobUrl(w)+'" target="_blank" rel="noopener">NAOB '+ic('external',13)+'</a>'
+          +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+obUrl(w)+'" target="_blank" rel="noopener">Ordbøkene '+ic('external',13)+'</a>'
+          +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+synUrl(w)+'" target="_blank" rel="noopener">Synonym '+ic('external',13)+'</a></div></div>';
+    } else { body='<div style="margin-top:18px">'+emptyState(tileRow('OK',34,NOR_VALUES,4),"Er ordet gyldig?",'Skriv et ord på ordtastaturet for å sjekke om det står i den norske ordlista — og slå opp betydningen.')+'</div>'; }
+    return '<div class="sc-field sc-field-active" data-action="focus-field" data-f="word">'+fieldDisp(lu.word,'Trykk ordet du vil slå opp…',true,NOR_VALUES)+'</div>'
+      +(lu.word?'<div style="display:flex;margin-top:12px"><button class="sc-btn sc-ghost sc-sm" data-action="field-clear" style="margin-left:auto">Tøm</button></div>':'')
+      +body
+      +'<div style="font-size:11.5px;color:var(--ink-4);margin:16px 2px 0;line-height:1.5">Sjekker mot norsk bokmål-ordliste ('+ordCount().toLocaleString('nb-NO')+' ord). Eksterne oppslag åpnes i ny fane.</div>';
+  }
+
+  function viewTools(fade){
+    var tab=state.tab;
+    var fromGame=state.toolsRet&&state.toolsRet.name==='game';
+    var topbar=fromGame
+      ? '<div style="margin-bottom:14px">'+backBtn('tools-back','Til spillet')+'</div>'
+      : '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px">'
+          +'<div style="display:flex;gap:3px;align-items:center">'+'ORDSMED'.split('').map(function(c){return tile(c,19);}).join('')+'</div>'
+          +'<div style="display:flex;gap:8px;align-items:center">'
+            +'<button class="sc-icon" data-action="cycle-theme" title="'+esc(themeTitle())+'">'+ic(themeIcon(),18)+'</button>'
+            +'<button class="sc-btn sc-soft sc-sm" data-action="open-games">'+ic('trophy',15)+' Spill</button>'
+          +'</div>'
+        +'</div>';
+    var seg=function(id,label){return '<button class="sc-seg-btn'+(tab===id?' sc-seg-on':'')+'" data-action="tools-tab" data-tab="'+id+'">'+label+'</button>';};
+    var body=tab==='cross'?tabCross():tab==='rim'?tabRim():tab==='lookup'?tabLookup():tabFind();
+    var f=state.helper.field||'rack';
+    var kbOpts=tab==='find'?{blank:f==='rack',wild:f==='pattern',go:goLabel()}:{blank:false,wild:false,go:goLabel()};
+    return '<div class="wrap'+(fade?' fadein':'')+'">'
+      +topbar
+      +'<div class="sc-seg" style="margin-bottom:18px">'+seg('find','Finn ord')+seg('cross','Kryssord')+seg('rim','Rim')+seg('lookup','Slå opp')+'</div>'
+      +body
+      +'<div style="height:290px"></div>'
+    +'</div>'
+    +keyboard(kbOpts);
+  }
+
+  /* ==================================================================
+     VIEWS — scorekeeper
+     ================================================================== */
+  function numpadBlock(o){
+    var d=o.display;
+    var b=function(n){return '<button class="sc-np-btn" data-action="'+o.digit+'" data-d="'+n+'">'+n+'</button>';};
+    return '<div class="sc-np-display'+(d?' sc-np-filled':'')+'"'+(o.id?' id="'+o.id+'"':'')+'>'+(d||'0')+'</div>'
+      +'<div class="sc-np">'+b(1)+b(2)+b(3)+b(4)+b(5)+b(6)+b(7)+b(8)+b(9)
+        +'<button class="sc-np-btn sc-np-fn" data-action="'+o.sign+'" title="Bytt fortegn">±</button>'+b(0)
+        +'<button class="sc-np-btn sc-np-fn" data-action="'+o.del+'" title="Slett">⌫</button></div>';
+  }
+  function updateDisplay(){var el=document.querySelector('.sc-np-display:not(#editNpDisplay)');if(!el)return;el.textContent=numInput||'0';el.classList.toggle('sc-np-filled',!!numInput);}
+  function npDigit(d){buzz(8);var digits=numInput.replace('-','');if(digits.length>=4)return;if(!numInput&&d==='0')return;numInput+=d;updateDisplay();}
+  function npDel(){numInput=numInput.slice(0,-1);if(numInput==='-')numInput='';updateDisplay();}
+  function npSign(){var digits=numInput.replace('-','');if(!digits)return;numInput=numInput[0]==='-'?digits:'-'+digits;updateDisplay();}
+  function updateEditDisplay(){var el=document.getElementById('editNpDisplay');if(!el)return;el.textContent=editNumInput||'0';el.classList.toggle('sc-np-filled',!!editNumInput);}
+  function editNpDigit(d){buzz(8);var digits=editNumInput.replace('-','');if(digits.length>=4)return;if(!editNumInput&&d==='0')return;editNumInput+=d;updateEditDisplay();}
+  function editNpDel(){editNumInput=editNumInput.slice(0,-1);if(editNumInput==='-')editNumInput='';updateEditDisplay();}
+  function editNpSign(){var digits=editNumInput.replace('-','');if(!digits)return;editNumInput=editNumInput[0]==='-'?digits:'-'+digits;updateEditDisplay();}
+
   function viewSetup(fade){
     var players=state.setup.players;
-    var first=((players[0]&&players[0].name)||'').trim()||'Player 1';
+    var first=((players[0]&&players[0].name)||'').trim()||'Spiller 1';
     var rows=players.map(function(p,i){
       return '<div class="sc-panel" style="display:flex;align-items:center;gap:8px;padding:8px">'
         +avatar(p.name||String(i+1),COLORS[i%COLORS.length],32)
-        +'<input class="sc-inp" data-setup-name="'+i+'" style="flex:1;border:none;background:transparent;padding:8px 4px" value="'+esc(p.name||'')+'" placeholder="Player '+(i+1)+'" maxlength="20">'
+        +'<input class="sc-inp" data-setup-name="'+i+'" style="flex:1;border:none;background:transparent;padding:8px 4px;min-height:0" value="'+esc(p.name||'')+'" placeholder="Spiller '+(i+1)+'" maxlength="20">'
         +'<div style="display:flex;flex-direction:column">'
           +'<button class="sc-mini" data-action="setup-move" data-i="'+i+'" data-dir="-1"'+(i===0?' disabled':'')+'>'+ic('chevUp',15)+'</button>'
-          +'<button class="sc-mini" data-action="setup-move" data-i="'+i+'" data-dir="1"'+(i===players.length-1?' disabled':'')+'>'+ic('chevDown',15)+'</button>'
-        +'</div>'
-        +'<button class="sc-icon sc-icon-danger" data-action="setup-remove" data-i="'+i+'"'+(players.length<=2?' disabled':'')+'>'+ic('x',16)+'</button>'
-      +'</div>';
+          +'<button class="sc-mini" data-action="setup-move" data-i="'+i+'" data-dir="1"'+(i===players.length-1?' disabled':'')+'>'+ic('chevDown',15)+'</button></div>'
+        +'<button class="sc-icon sc-icon-danger" data-action="setup-remove" data-i="'+i+'"'+(players.length<=2?' disabled':'')+'>'+ic('x',16)+'</button></div>';
     }).join('');
-    var ph=esc('Game · '+new Date().toLocaleDateString(undefined,{day:'numeric',month:'short'}));
+    var ph=esc('Spill · '+new Date().toLocaleDateString('nb-NO',{day:'numeric',month:'short'}));
     return '<div class="wrap'+(fade?' fadein':'')+'">'
-      +'<button class="sc-btn sc-ghost" style="margin-left:-8px;margin-bottom:14px" data-action="setup-back">'+ic('arrowLeft',18)+' Back</button>'
-      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 18px">New game</h1>'
-      +'<label style="'+lblCss+'">Game name <span style="color:#6f6354;font-weight:500">· optional</span></label>'
+      +backBtn('setup-back','Tilbake')
+      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 18px">Nytt spill</h1>'
+      +'<label class="sc-label">Spillnavn <span class="opt">· valgfritt</span></label>'
       +'<input class="sc-inp" id="setupNameInput" value="'+esc(state.setup.name||'')+'" placeholder="'+ph+'">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px">'
-        +'<label style="'+lblCss+';margin:0">Players <span style="color:#6f6354;font-weight:500">· '+players.length+'</span></label>'
-        +'<span style="font-size:12.5px;color:#8a7c69">top to bottom = turn order</span>'
-      +'</div>'
+        +'<label class="sc-label" style="margin:0">Spillere <span class="opt">· '+players.length+'</span></label>'
+        +'<span style="font-size:12.5px;color:var(--ink-3)">øverst = først ut</span></div>'
       +'<div style="display:grid;gap:8px">'+rows+'</div>'
-      +'<button class="sc-btn sc-soft" style="margin-top:10px;width:100%;justify-content:center" data-action="setup-add"'+(players.length>=8?' disabled':'')+'>'+ic('plus',17)+' Add player</button>'
-      +'<div style="display:flex;align-items:center;gap:7px;color:#8a7c69;font-size:13.5px;margin:18px 2px 0">'+ic('play',14,{stroke:'#f0c052'})+' <strong style="color:#cbbba2;font-weight:700">'+esc(first)+'</strong> goes first.</div>'
-      +'<button class="sc-btn '+(state.setup.hidden?'sc-gold':'sc-soft')+'" style="margin-top:16px;width:100%;justify-content:center" data-action="setup-toggle-hidden" aria-pressed="'+(state.setup.hidden?'true':'false')+'">'+ic(state.setup.hidden?'eyeOff':'eye',16)+' Hidden scores · '+(state.setup.hidden?'on':'off')+'</button>'
-      +'<div style="font-size:12px;color:#6f6354;margin:8px 2px 0">Keep running totals and the leader secret until you end the game. You can switch this any time.</div>'
-      +'<button class="sc-btn sc-gold" style="margin-top:18px;width:100%;justify-content:center;padding:14px" data-action="setup-start">Start scoring</button>'
-    +'</div>';
+      +'<button class="sc-btn sc-soft sc-block" style="margin-top:10px" data-action="setup-add"'+(players.length>=8?' disabled':'')+'>'+ic('plus',17)+' Legg til spiller</button>'
+      +'<div style="display:flex;align-items:center;gap:7px;color:var(--ink-3);font-size:13.5px;margin:18px 2px 0">'+ic('play',14,{stroke:'#f0c052'})+' <strong style="color:var(--ink-2);font-weight:700">'+esc(first)+'</strong> starter.</div>'
+      +'<button class="sc-btn '+(state.setup.hidden?'sc-gold':'sc-soft')+' sc-block" style="margin-top:16px" data-action="setup-toggle-hidden" aria-pressed="'+(state.setup.hidden?'true':'false')+'">'+ic(state.setup.hidden?'eyeOff':'eye',16)+' Skjulte poeng · '+(state.setup.hidden?'på':'av')+'</button>'
+      +'<div style="font-size:12px;color:var(--ink-4);margin:8px 2px 0">Hold totalsummer og lederen skjult til spillet avsluttes. Kan endres når som helst.</div>'
+      +'<button class="sc-btn sc-gold sc-block" style="margin-top:20px;padding:15px" data-action="setup-start">Start poengføring</button></div>';
   }
 
   function confettiHTML(){
@@ -548762,33 +549110,17 @@ ZYUMYURKHACH
     return s;
   }
 
-  function numpadHTML(){
-    return '<div class="sc-np-display'+(numInput?' sc-np-filled':'')+'">'+(numInput||'0')+'</div>'
-      +'<div class="sc-np">'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="1">1</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="2">2</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="3">3</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="4">4</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="5">5</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="6">6</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="7">7</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="8">8</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="9">9</button>'
-        +'<button class="sc-np-btn" data-action="np-digit" data-d="0">0</button>'
-      +'</div>';
-  }
-
   function viewGame(fade){
     var g=currentGame();
-    if(!g){state.view={name:'home',id:null};return viewHome();}
-    var n=g.players.length,totals=totalsOf(g),rows=standings(g),lead=leaderInfo(g),turn=nextTurn(g);
+    if(!g){state.view={name:'games',id:null};return viewGames();}
+    var n=g.players.length,totals=totalsOf(g),lead=leaderInfo(g),turn=nextTurn(g);
     var hide=g.hidden&&!g.finished;
     var colors=g.players.map(function(_,i){return COLORS[i%COLORS.length];});
     var playedRounds=Math.ceil(g.scores.length/n);
     var displayRounds=g.finished?playedRounds:Math.ceil((g.scores.length+1)/n);
-    var winnerLine=lead.unique?(esc(g.players[lead.index].name)+' wins with '+lead.max):('Tie at '+lead.max+' — '+lead.leaders.map(function(i){return esc(g.players[i].name);}).join(' &amp; '));
+    var winnerLine=lead.unique?(esc(g.players[lead.index].name)+' vinner med '+lead.max):('Uavgjort på '+lead.max+' — '+lead.leaders.map(function(i){return esc(g.players[i].name);}).join(' &amp; '));
 
-    var header='<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">'
+    var header='<div style="display:flex;align-items:center;gap:6px;margin-bottom:16px">'
       +'<button class="sc-btn sc-ghost" style="margin-left:-8px;padding:8px 10px" data-action="go-home">'+ic('arrowLeft',18)+'</button>';
     if(state.renaming){
       header+='<div style="display:flex;align-items:center;gap:6px;flex:1">'
@@ -548796,21 +549128,20 @@ ZYUMYURKHACH
         +'<button class="sc-icon" data-action="rename-commit">'+ic('check',17)+'</button>'
         +'<button class="sc-icon" data-action="rename-cancel">'+ic('x',17)+'</button></div>';
     } else {
-      header+='<button class="sc-titlebtn" data-action="rename-start" title="Rename game">'
+      header+='<button class="sc-titlebtn" data-action="rename-start" title="Endre navn">'
         +'<span style="font-weight:800;font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(g.name)+'</span>'
         +ic('pencil',14,{stroke:'#6f6354'})+'</button>';
     }
-    if(!g.finished){
-      header+='<button class="sc-icon'+(g.hidden?' sc-icon-on':'')+'" data-action="toggle-hidden" title="'+(g.hidden?'Show scores':'Hide scores')+'" aria-pressed="'+(g.hidden?'true':'false')+'">'+ic(g.hidden?'eyeOff':'eye',18)+'</button>';
-    }
-    header+='<span class="sc-chip '+(g.finished?'sc-chip-done':'sc-chip-live')+'" style="flex:none">'+(g.finished?'Final':'Round '+(turn.round+1))+'</span></div>';
+    header+='<button class="sc-btn sc-soft sc-sm" style="flex:none;gap:6px" data-action="open-tools-game">'+ic('book',15)+' Ordbok</button>';
+    if(!g.finished){header+='<button class="sc-icon'+(g.hidden?' sc-icon-on':'')+'" data-action="toggle-hidden" title="'+(g.hidden?'Vis poeng':'Skjul poeng')+'" aria-pressed="'+(g.hidden?'true':'false')+'">'+ic(g.hidden?'eyeOff':'eye',18)+'</button>';}
+    header+='<span class="sc-chip '+(g.finished?'sc-chip-done':'sc-chip-live')+'" style="flex:none">'+(g.finished?'Ferdig':'Runde '+(turn.round+1))+'</span></div>';
 
     var winner='';
     if(g.finished&&lead.played){
       winner='<div class="sc-card sc-winner" style="position:relative;overflow:hidden;padding:18px;margin-bottom:16px">'
         +'<div class="sc-confetti">'+confettiHTML()+'</div>'
         +'<div style="display:flex;align-items:center;gap:12px;position:relative">'+ic('trophy',30,{stroke:'#f0c052'})
-          +'<div><div style="font-size:12.5px;letter-spacing:1.5px;color:#caa23e;font-weight:700;text-transform:uppercase">Game over</div>'
+          +'<div><div class="eyebrow" style="color:#caa23e">Spillet er slutt</div>'
           +'<div style="font-size:20px;font-weight:800">'+winnerLine+'</div></div></div></div>';
     }
 
@@ -548818,291 +549149,93 @@ ZYUMYURKHACH
     g.players.forEach(function(p,i){
       var isLeader=lead.played&&totals[i]===lead.max;
       var isTurn=!g.finished&&i===turn.player;
-      var cardExtra=isTurn
-        ?';border:2px solid '+colors[i]+';background:linear-gradient(180deg,'+colors[i]+'22,'+colors[i]+'0a)'
-        :'';
+      var cardExtra=isTurn?';border:2px solid '+colors[i]+';background:linear-gradient(180deg,'+colors[i]+'22,'+colors[i]+'0a)':'';
       stand+='<div class="sc-card sc-stand" style="padding:12px 14px;display:flex;align-items:center;gap:12px;position:relative'+cardExtra+'">'
         +avatar(p.name,colors[i],36)
         +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div>'
-          +(isTurn?'<div style="display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:800;background:'+colors[i]+'33;color:'+colors[i]+';border:1px solid '+colors[i]+'66">'+ic('play',11,{fill:colors[i],stroke:'none'})+' Your turn</div>':'')
-        +'</div>'
+          +(isTurn?'<div style="display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:800;background:'+colors[i]+'33;color:'+colors[i]+';border:1px solid '+colors[i]+'66">'+ic('play',11,{fill:colors[i],stroke:'none'})+' Din tur</div>':'')+'</div>'
         +'<div style="display:flex;align-items:center;gap:5px;flex:none">'
           +(isLeader&&!hide?ic('crown',18,{fill:'#f0c052',stroke:'#f0c052',sw:1.5,cls:'sc-crown'}):'')
-          +'<div class="sc-popnum" style="font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;color:'+(hide?'#6f6354':(isLeader?'#f4d27a':'#f3e9d6'))+'">'+(hide?'•••':totals[i])+'</div>'
-        +'</div>'
-      +'</div>';
+          +'<div class="sc-popnum" style="font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;color:'+(hide?'var(--ink-4)':(isLeader?'var(--gold)':'var(--ink)'))+'">'+(hide?'•••':totals[i])+'</div></div></div>';
     });
     stand+='</div>';
 
     var entry='';
     if(!g.finished){
-      entry='<div style="position:fixed;bottom:0;left:0;right:0;z-index:10;background:#1a140e;border-top:1px solid #33281d;box-shadow:0 -6px 24px rgba(0,0,0,.6);padding:12px calc(16px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))">'
+      entry='<div id="gameEntry" style="position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--bar-bg);border-top:1px solid var(--bar-line);box-shadow:0 -6px 24px rgba(0,0,0,.45);padding:12px var(--pad-r) calc(12px + env(safe-area-inset-bottom)) var(--pad-l)">'
         +'<div id="toastLayer" style="position:absolute;bottom:100%;left:0;right:0;padding-bottom:8px"></div>'
-        +'<div style="max-width:728px;margin:0 auto">'
+        +'<div style="max-width:608px;margin:0 auto">'
         +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+avatar(g.players[turn.player].name,colors[turn.player],34)
-          +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+(turn.round+1)+' · turn to score</div>'
+          +'<div><div style="font-size:12.5px;color:var(--ink-3);font-weight:600">Runde '+(turn.round+1)+' · før poeng for</div>'
           +'<div style="font-size:17px;font-weight:800">'+esc(g.players[turn.player].name)+'</div></div></div>'
-        +numpadHTML()
-        +'<div style="display:flex;gap:6px;margin-top:8px">'
-          +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:17px" data-action="np-del" title="Backspace">⌫</button>'
-          +'<button class="sc-btn sc-soft sc-sm" style="width:40px;padding:0;flex:none;justify-content:center;font-size:16px;font-weight:800" data-action="np-sign" title="Toggle negative">±</button>'
-          +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center;font-size:14px" data-action="score-pass">Pass / 0</button>'
-          +'<button class="sc-btn sc-soft sc-sm" style="flex:none;justify-content:center" data-action="score-undo"'+(g.scores.length?'':' disabled')+' title="Undo last">'+ic('undo',16)+'</button>'
-          +'<button class="sc-btn sc-gold" style="flex:none;padding:0 16px" data-action="score-add">'+ic('plus',17)+' Add</button>'
-        +'</div>'
+        +numpadBlock({display:numInput,digit:'np-digit',del:'np-del',sign:'np-sign'})
+        +'<div style="display:flex;gap:7px;margin-top:8px">'
+          +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="score-pass">Pass · 0</button>'
+          +'<button class="sc-btn sc-soft sc-sm" style="flex:none" data-action="score-undo"'+(g.scores.length?'':' disabled')+' title="Angre siste">'+ic('undo',17)+'</button>'
+          +'<button class="sc-btn sc-gold" style="flex:1.4;justify-content:center" data-action="score-add">'+ic('plus',17)+' Før inn</button></div>'
         +'</div></div>';
     } else {
       entry='<div class="sc-panel" style="padding:14px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">'
-        +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="reopen-game">'+ic('rotate',16)+' Reopen game</button>'
-        +'<button class="sc-btn sc-gold" style="flex:1;justify-content:center" data-action="new-game">'+ic('plus',17)+' New game</button></div>';
+        +'<button class="sc-btn sc-soft" style="flex:1;justify-content:center" data-action="reopen-game">'+ic('rotate',16)+' Gjenåpne</button>'
+        +'<button class="sc-btn sc-gold" style="flex:1;justify-content:center" data-action="new-game">'+ic('plus',17)+' Nytt spill</button></div>';
     }
 
     var cells='<div></div>';
-    g.players.forEach(function(p,i){
-      cells+='<div style="text-align:center;padding-bottom:2px"><span class="sc-dot" style="background:'+colors[i]+';display:inline-block;margin-bottom:3px"></span><div style="font-size:11px;color:#cfe3d8;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div></div>';
-    });
-    for(var r=0;r<displayRounds;r++){
-      cells+='<div style="display:flex;align-items:center;justify-content:center;color:#9fc3b3;font-weight:700;font-size:13px">R'+(r+1)+'</div>';
+    g.players.forEach(function(p,i){cells+='<div style="text-align:center;padding-bottom:2px"><span class="sc-dot" style="background:'+colors[i]+';display:inline-block;margin-bottom:3px"></span><div style="font-size:11px;color:var(--felt-ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div></div>';});
+    for(var rr=0;rr<displayRounds;rr++){
+      cells+='<div style="display:flex;align-items:center;justify-content:center;color:var(--felt-ink-2);font-weight:700;font-size:13px">R'+(rr+1)+'</div>';
       for(var c=0;c<n;c++){
-        var ti=r*n+c, filled=ti<g.scores.length, isCurrent=!g.finished&&ti===g.scores.length;
-        if(filled){cells+='<button class="sc-scell" data-action="edit-cell" data-ti="'+ti+'" title="Tap to edit">'+g.scores[ti]+'</button>';}
-        else if(isCurrent){cells+='<div class="sc-slot-current" style="height:40px" data-action="focus-entry" title="Current turn"></div>';}
+        var ti=rr*n+c, filled=ti<g.scores.length, isCurrent=!g.finished&&ti===g.scores.length;
+        if(filled){cells+='<button class="sc-scell" data-action="edit-cell" data-ti="'+ti+'" title="Trykk for å rette">'+g.scores[ti]+'</button>';}
+        else if(isCurrent){cells+='<div class="sc-slot-current" style="height:40px"></div>';}
         else{cells+='<div class="sc-slot-empty" style="height:40px"></div>';}
       }
     }
     cells+='<div style="display:flex;align-items:center;justify-content:center;color:#f0c052;font-weight:800;font-size:15px;margin-top:4px">&#931;</div>';
     totals.forEach(function(t){cells+='<div class="sc-total'+(hide?' sc-total-hidden':'')+'" style="margin-top:4px">'+(hide?'•':t)+'</div>';});
-
     var grid='<div style="margin-bottom:14px">'
-      +'<div style="display:flex;align-items:center;gap:6px;color:#8a7c69;font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 2px 8px">'+ic('hash',14)+' Round by round</div>'
+      +'<div class="eyebrow" style="display:flex;align-items:center;gap:6px;margin:0 2px 8px">'+ic('hash',14)+' Runde for runde</div>'
       +'<div class="sc-felt" style="padding:10px;overflow-x:auto"><div style="display:inline-grid;grid-template-columns:46px repeat('+n+',56px);gap:6px;min-width:100%">'+cells+'</div></div>'
-      +'<div style="font-size:12px;color:#6f6354;margin:8px 2px 0">Tap any score to fix it. End-of-game tile penalties? Enter a negative number.</div></div>';
-
-    var endBtn=(!g.finished)?'<button class="sc-btn sc-soft" style="width:100%;justify-content:center" data-action="end-game"'+(g.scores.length?'':' disabled')+'>'+ic('flag',16)+' End game &amp; crown the winner</button>':'';
-
-    // in-game word lookup (validity + NAOB)
-    var lu=state.lookup,luRes='';
-    if(lu.result){
-      var ok=lu.result.valid;
-      luRes='<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-        +'<span style="font-weight:800;font-size:16px;letter-spacing:1px">'+esc(lu.result.word)+'</span>'
-        +(ok===null?'<span style="color:#8a7c69;font-size:13px">Ordlisten laster…</span>'
-          : ok?'<span class="sc-chip" style="background:rgba(123,196,127,.16);color:#8fd28f">'+ic('check',13,{stroke:'#8fd28f'})+' Gyldig ord</span>'
-              :'<span class="sc-chip" style="background:rgba(230,145,127,.16);color:#e6917f">'+ic('x',13,{stroke:'#e6917f'})+' Ikke i ordlista</span>')
-        +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+naobUrl(lu.result.word)+'" target="_blank" rel="noopener">Se i NAOB ↗</a>'
-      +'</div>';
-    }
-    var lookupPanel='<div class="sc-panel" style="padding:12px 14px;margin-bottom:14px">'
-      +'<button class="sc-titlebtn" data-action="lookup-toggle" style="width:100%" aria-expanded="'+(lu.open?'true':'false')+'">'
-        +ic('hash',15,{stroke:'#8a7c69'})
-        +'<span style="font-weight:700;font-size:14px;flex:1">Slå opp ord · NAOB</span>'
-        +ic(lu.open?'chevUp':'chevDown',16,{stroke:'#8a7c69'})
-      +'</button>'
-      +(lu.open?('<div style="margin-top:10px">'
-        +'<div style="display:flex;gap:8px">'
-          +'<input class="sc-inp" id="lookupInput" value="'+esc(lu.word||'')+'" placeholder="Skriv et ord…" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;text-transform:uppercase">'
-          +'<button class="sc-btn sc-gold" data-action="lookup-do">'+ic('check',16)+' Sjekk</button>'
-        +'</div>'+luRes
-        +'<div style="font-size:11.5px;color:#6f6354;margin-top:8px">Sjekker mot norsk bokmål-ordliste (494 902 ord). «Se i NAOB» åpner betydningen i ny fane.</div>'
-      +'</div>'):'')
-    +'</div>';
-
-    // spacer so content isn't hidden under the fixed entry panel
-    var spacer=(!g.finished)?'<div style="height:230px"></div>':'';
-
-    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+lookupPanel+grid+endBtn+spacer+'</div>'+entry;
-  }
-
-  function helperResultRow(r){
-    var tiles='';
-    for(var i=0;i<r.w.length;i++)tiles+=tile(r.w[i],24,NOR_VALUES);
-    return '<div class="sc-card" style="padding:9px 11px;display:flex;align-items:center;gap:10px">'
-      +'<div style="display:flex;gap:2px;flex-wrap:wrap;flex:1;min-width:0">'+tiles+'</div>'
-      +(r.blanks?'<span style="font-size:11px;color:#8a7c69;flex:none" title="Blanke brikker brukt">'+r.blanks+'&nbsp;blank</span>':'')
-      +'<div class="sc-total" style="height:auto;padding:5px 11px;min-width:34px;flex:none">'+r.score+'</div>'
-    +'</div>';
-  }
-  function viewHelper(fade){
-    var h=state.helper;
-    var ready=ordbokReady();
-    var results='';
-    if(h.error){
-      results='<div class="sc-panel" style="padding:16px;color:#e6917f;font-size:14px">'+esc(h.error)+'</div>';
-    } else if(h.searched&&h.results){
-      if(h.results.length===0){
-        results='<div class="sc-panel" style="padding:30px 20px;text-align:center;color:#8a7c69">'
-          +'<div style="font-weight:700;font-size:16px;margin-bottom:4px;color:#cbbba2">Ingen ord</div>'
-          +'Fant ingen gyldige ord for dette. Prøv andre brikker eller færre filtre.</div>';
-      } else {
-        var head='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px">'
-          +'<div style="font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a7c69;display:flex;align-items:center;gap:6px">'+ic('check',14,{stroke:'#7BC47F'})+h.total+' treff</div>'
-          +(h.truncated?'<div style="font-size:12px;color:#6f6354">viser topp '+h.results.length+'</div>':'')
-        +'</div>';
-        results=head+'<div style="display:grid;gap:7px">'+h.results.map(helperResultRow).join('')+'</div>'
-          +(h.truncated?'<div style="text-align:center;font-size:12px;color:#6f6354;margin-top:12px">+ '+h.truncated+' flere ord skjult · legg til et filter for å snevre inn</div>':'');
-      }
-    } else {
-      results='<div class="sc-panel" style="padding:26px 20px;text-align:center;color:#8a7c69">'
-        +'<div style="display:flex;gap:4px;justify-content:center;margin-bottom:14px;opacity:.9">'+'ORD'.split('').map(function(c){return tile(c,34,NOR_VALUES);}).join('')+'</div>'
-        +'<div style="font-weight:700;font-size:16px;margin-bottom:6px;color:#cbbba2">Finn ord fra brikkene dine</div>'
-        +'Skriv inn bokstavene du har på stativet, så finner vi alle gyldige ord — sortert etter poeng.</div>';
-    }
-    var adv='';
-    if(h.adv){
-      var fld=function(id,lbl,ph,val){return '<div><label style="'+lblCss+';margin-bottom:5px">'+lbl+'</label>'
-        +'<input class="sc-inp" id="'+id+'" value="'+esc(val||'')+'" placeholder="'+ph+'" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>';};
-      adv='<div style="display:grid;gap:10px;margin-top:12px">'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-          +fld('helpStarts','Begynner med','f.eks. FOR',h.starts)
-          +fld('helpEnds','Slutter på','f.eks. ING',h.ends)
-        +'</div>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-          +fld('helpContains','Inneholder','f.eks. XY',h.contains)
-          +fld('helpPattern','Mønster','B..T (. = vilkårlig)',h.pattern)
-        +'</div>'
-      +'</div>';
-    }
-    return '<div class="wrap'+(fade?' fadein':'')+'">'
-      +'<button class="sc-btn sc-ghost" style="margin-left:-8px;margin-bottom:14px" data-action="helper-back">'+ic('arrowLeft',18)+' Tilbake</button>'
-      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 4px">Ordhjelper</h1>'
-      +'<p style="color:#8a7c69;font-size:14px;margin:0 0 20px">Norsk bokmål · '+(ready?(window.SCRABBLE_ORDBOK.n||'').toLocaleString('no'):'—')+' ord'+(ORDBOK?'':'')+'</p>'
-      +'<div class="sc-card" style="padding:16px">'
-        +'<label style="'+lblCss+'">Brikkene dine <span style="color:#6f6354;font-weight:500">· bruk ? for blank</span></label>'
-        +'<input class="sc-inp" id="helpRack" value="'+esc(h.rack||'')+'" placeholder="f.eks. MSABLNE eller MS??" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-size:20px;letter-spacing:3px;text-transform:uppercase">'
-        +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
-          +'<button class="sc-btn sc-gold" data-action="helper-search" style="flex:1;min-width:130px;justify-content:center">'+ic('check',17)+' Finn ord</button>'
-          +'<button class="sc-btn '+(h.useAll?'sc-gold':'sc-soft')+' sc-sm" data-action="helper-toggle-all" aria-pressed="'+(h.useAll?'true':'false')+'" title="Krev at hele stativet brukes">'+(h.useAll?'✓ ':'')+'Bruk alle</button>'
-          +'<button class="sc-btn sc-ghost sc-sm" data-action="helper-toggle-adv" aria-pressed="'+(h.adv?'true':'false')+'">'+ic(h.adv?'chevUp':'chevDown',15)+' Avansert</button>'
-        +'</div>'
-        +adv
-      +'</div>'
-      +'<div style="margin-top:18px">'+results+'</div>'
-      +'<div style="font-size:11.5px;color:#6f6354;margin:16px 2px 0;line-height:1.5">Ordliste: Norsk Ordbank (Språkbanken / UiB, CC-BY 4.0). Poeng er ordets grunnpoeng uten bonusruter; blanke brikker teller 0.</div>'
-    +'</div>';
-  }
-
-  function kryssRow(w){
-    return '<div class="sc-card" style="padding:9px 12px;display:flex;align-items:center;gap:10px">'
-      +'<span style="flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:700;letter-spacing:2px;color:#f3e9d6;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(w)+'</span>'
-      +'<span style="font-size:11px;color:#6f6354;flex:none">'+w.length+'</span>'
-      +'<a class="sc-btn sc-ghost sc-sm" style="text-decoration:none;flex:none" href="'+naobUrl(w)+'" target="_blank" rel="noopener" title="Slå opp i NAOB">NAOB ↗</a>'
-    +'</div>';
-  }
-  function viewKryss(fade){
-    var k=state.kryss;
-    var ready=ordbokReady();
-    var results='';
-    var r=k.results;
-    if(k.error){
-      results='<div class="sc-panel" style="padding:16px;color:#e6917f;font-size:14px">'+esc(k.error)+'</div>';
-    } else if(k.searched&&r&&r.mode==='clue'){
-      var clueW=r.clue,secs='';
-      if(!r.known){
-        secs='<div class="sc-panel" style="padding:24px 20px;text-align:center;color:#8a7c69">'
-          +'<div style="font-weight:700;font-size:16px;margin-bottom:4px;color:#cbbba2">Ukjent ledetråd</div>'
-          +'«'+esc(clueW)+'» finnes ikke i synonymdataene. Prøv grunnformen (entall, ubestemt), eller søk eksternt:'
-          +'<div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;justify-content:center">'
-            +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+synUrl(clueW)+'" target="_blank" rel="noopener">Synonymordboka ↗</a>'
-            +'<a class="sc-btn sc-soft sc-sm" style="text-decoration:none" href="'+naobUrl(clueW)+'" target="_blank" rel="noopener">NAOB ↗</a>'
-          +'</div></div>';
-      } else if(r.syns.length===0&&r.cats.length===0){
-        secs='<div class="sc-panel" style="padding:24px 20px;text-align:center;color:#8a7c69">'
-          +'<div style="font-weight:700;font-size:16px;margin-bottom:4px;color:#cbbba2">Ingen treff med disse filtrene</div>'
-          +'Ledetråden «'+esc(clueW)+'» har svar, men ingen passer mønsteret/lengden. Løsne filtrene.</div>';
-      } else {
-        var sect=function(title,words){
-          if(!words.length)return '';
-          return '<div style="font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a7c69;margin:14px 2px 8px;display:flex;align-items:center;gap:6px">'+ic('check',14,{stroke:'#7BC47F'})+title+' · '+words.length+'</div>'
-            +'<div style="display:grid;gap:7px">'+words.map(kryssRow).join('')+'</div>';
-        };
-        secs=sect('Synonymer',r.syns)+sect('Eksempler på «'+esc(clueW)+'»',r.cats)
-          +(k.truncated?'<div style="text-align:center;font-size:12px;color:#6f6354;margin-top:12px">+ '+k.truncated+' flere skjult · bruk mønster/lengde for å snevre inn</div>':'');
-      }
-      results=secs;
-    } else if(k.searched&&r&&r.mode==='pattern'){
-      if(r.words.length===0){
-        results='<div class="sc-panel" style="padding:30px 20px;text-align:center;color:#8a7c69">'
-          +'<div style="font-weight:700;font-size:16px;margin-bottom:4px;color:#cbbba2">Ingen treff</div>'
-          +'Ingen ord passer mønsteret. Sjekk lengden og de kjente bokstavene.</div>';
-      } else {
-        var head='<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px">'
-          +'<div style="font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a7c69;display:flex;align-items:center;gap:6px">'+ic('check',14,{stroke:'#7BC47F'})+k.total+' treff</div>'
-          +(k.truncated?'<div style="font-size:12px;color:#6f6354">viser '+r.words.length+'</div>':'')
-        +'</div>';
-        results=head+'<div style="display:grid;gap:7px">'+r.words.map(kryssRow).join('')+'</div>'
-          +(k.truncated?'<div style="text-align:center;font-size:12px;color:#6f6354;margin-top:12px">+ '+k.truncated+' flere treff skjult · legg til flere kjente bokstaver</div>':'');
-      }
-    } else {
-      results='<div class="sc-panel" style="padding:26px 20px;text-align:center;color:#8a7c69">'
-        +'<div style="display:flex;gap:4px;justify-content:center;margin-bottom:14px;opacity:.9">'+'K_YSS'.split('').map(function(c){return c==='_'?'<div class="sc-slot-empty" style="width:34px;height:34px"></div>':tile(c,34,NOR_VALUES);}).join('')+'</div>'
-        +'<div style="font-weight:700;font-size:16px;margin-bottom:6px;color:#cbbba2">Finn løsningsordet</div>'
-        +'Skriv en ledetråd (f.eks. <b>FISK</b>), et mønster med _ for ukjente ruter (f.eks. <b>K_YSS_RD</b>) — eller begge for å filtrere svarene.</div>';
-    }
-    var adv='';
-    if(k.adv){
-      adv='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">'
-        +'<div><label style="'+lblCss+';margin-bottom:5px">Antall bokstaver</label><input class="sc-inp" id="kryssLen" value="'+esc(k.len||'')+'" placeholder="f.eks. 8" inputmode="numeric" autocomplete="off"></div>'
-        +'<div><label style="'+lblCss+';margin-bottom:5px">Inneholder</label><input class="sc-inp" id="kryssContains" value="'+esc(k.contains||'')+'" placeholder="f.eks. SS" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>'
-      +'</div>';
-    }
-    return '<div class="wrap'+(fade?' fadein':'')+'">'
-      +'<button class="sc-btn sc-ghost" style="margin-left:-8px;margin-bottom:14px" data-action="kryss-back">'+ic('arrowLeft',18)+' Tilbake</button>'
-      +'<h1 style="font-size:26px;font-weight:800;margin:0 0 4px">Kryssordbok</h1>'
-      +'<p style="color:#8a7c69;font-size:14px;margin:0 0 20px">Norsk bokmål · '+(ready?(window.SCRABBLE_ORDBOK.n||'').toLocaleString('no'):'—')+' ord + synonymdata</p>'
-      +'<div class="sc-card" style="padding:16px">'
-        +'<label style="'+lblCss+'">Ledetråd <span style="color:#6f6354;font-weight:500">· synonym eller kategori, f.eks. FISK</span></label>'
-        +'<input class="sc-inp" id="kryssClue" value="'+esc(k.clue||'')+'" placeholder="f.eks. HOVEDSTAD" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase">'
-        +'<label style="'+lblCss+';margin-top:12px">Mønster <span style="color:#6f6354;font-weight:500">· _ for ukjent rute · valgfritt</span></label>'
-        +'<input class="sc-inp" id="kryssPattern" value="'+esc(k.pattern||'')+'" placeholder="K_YSS_RD" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-size:20px;letter-spacing:4px;text-transform:uppercase">'
-        +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
-          +'<button class="sc-btn sc-gold" data-action="kryss-search" style="flex:1;min-width:130px;justify-content:center">'+ic('check',17)+' Søk</button>'
-          +'<button class="sc-btn sc-ghost sc-sm" data-action="kryss-toggle-adv" aria-pressed="'+(k.adv?'true':'false')+'">'+ic(k.adv?'chevUp':'chevDown',15)+' Flere filtre</button>'
-        +'</div>'
-        +adv
-      +'</div>'
-      +'<div style="margin-top:18px">'+results+'</div>'
-      +'<div style="font-size:11.5px;color:#6f6354;margin:16px 2px 0;line-height:1.5">Ordliste: Norsk Ordbank (CC-BY 4.0). Synonymer og kategorier: Norsk Ordvev (Språkbanken / Nasjonalbiblioteket, CC-BY). Alt søkes lokalt i appen.</div>'
-    +'</div>';
+      +'<div style="font-size:12px;color:var(--ink-4);margin:8px 2px 0">Trykk på et tall for å rette. Minuspoeng ved slutt? Skriv et negativt tall.</div></div>';
+    var endBtn=(!g.finished&&g.scores.length)?'<button class="sc-btn sc-soft sc-block" style="margin-bottom:16px" data-action="end-game">'+ic('flag',16)+' Avslutt &amp; kår vinneren</button>':'';
+    var spacer=(!g.finished)?'<div id="gameSpacer" style="height:300px"></div>':'';
+    return '<div class="wrap'+(fade?' fadein':'')+'">'+header+winner+stand+endBtn+grid+spacer+'</div>'+entry;
   }
 
   function renderModals(){
     var html='';
     if(state.modal){
       var m=state.modal;
-      html+='<div class="sc-overlay"><div class="sc-card" style="width:min(420px,92vw);padding:22px">'
+      html+='<div class="sc-overlay"><div class="sc-card sc-sheet" style="width:min(420px,92vw);padding:22px">'
         +'<div style="font-size:18px;font-weight:800;margin-bottom:6px">'+esc(m.title)+'</div>'
-        +'<div style="color:#b7a892;font-size:14px;line-height:1.5;margin-bottom:18px">'+esc(m.body)+'</div>'
+        +'<div style="color:var(--ink-2);font-size:14px;line-height:1.5;margin-bottom:18px">'+esc(m.body)+'</div>'
         +'<div style="display:flex;gap:10px;justify-content:flex-end">'
-          +'<button class="sc-btn sc-ghost" data-action="modal-cancel">Cancel</button>'
-          +'<button class="sc-btn '+(m.danger?'sc-danger':'sc-gold')+'" data-action="modal-yes">'+esc(m.confirm)+'</button>'
-        +'</div></div></div>';
+          +'<button class="sc-btn sc-ghost" data-action="modal-cancel">Avbryt</button>'
+          +'<button class="sc-btn '+(m.danger?'sc-danger':'sc-gold')+'" data-action="modal-yes">'+esc(m.confirm)+'</button></div></div></div>';
     }
     if(state.backup==='export'){
-      html+='<div class="sc-overlay"><div class="sc-card" style="width:min(560px,94vw);padding:20px">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:18px;font-weight:800">Back up your games</div><button class="sc-icon" data-action="backup-close">'+ic('x',18)+'</button></div>'
-        +'<div style="color:#b7a892;font-size:13.5px;line-height:1.5;margin-bottom:12px">Copy this text and keep it safe. Paste it into Restore on any device to bring every game back.</div>'
+      html+='<div class="sc-overlay"><div class="sc-card sc-sheet" style="width:min(560px,94vw);padding:20px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:18px;font-weight:800">Sikkerhetskopi</div><button class="sc-icon" data-action="backup-close">'+ic('x',18)+'</button></div>'
+        +'<div style="color:var(--ink-2);font-size:13.5px;line-height:1.5;margin-bottom:12px">Kopier teksten og ta vare på den. Lim den inn i «Gjenopprett» på en hvilken som helst enhet for å hente alle spill tilbake.</div>'
         +'<textarea id="exportArea" class="sc-area" readonly onfocus="this.select()"></textarea>'
-        +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button class="sc-btn sc-gold" data-action="export-copy">'+ic('copy',17)+' Copy</button></div>'
-      +'</div></div>';
+        +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button class="sc-btn sc-gold" data-action="export-copy">'+ic('copy',17)+' Kopier</button></div></div></div>';
     } else if(state.backup==='import'){
-      html+='<div class="sc-overlay"><div class="sc-card" style="width:min(560px,94vw);padding:20px">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:18px;font-weight:800">Restore games</div><button class="sc-icon" data-action="backup-close">'+ic('x',18)+'</button></div>'
-        +'<div style="color:#b7a892;font-size:13.5px;line-height:1.5;margin-bottom:12px">Paste backup text below. Games are merged in — newer versions win, nothing already here is lost.</div>'
-        +'<textarea id="importArea" class="sc-area" placeholder="Paste your backup text here…"></textarea>'
-        +(state.importErr?'<div style="color:#e6917f;font-size:13px;margin-top:8px">'+esc(state.importErr)+'</div>':'')
-        +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button class="sc-btn sc-ghost" data-action="backup-close">Cancel</button><button class="sc-btn sc-gold" data-action="import-do">'+ic('upload',17)+' Restore</button></div>'
-      +'</div></div>';
+      html+='<div class="sc-overlay"><div class="sc-card sc-sheet" style="width:min(560px,94vw);padding:20px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:18px;font-weight:800">Gjenopprett spill</div><button class="sc-icon" data-action="backup-close">'+ic('x',18)+'</button></div>'
+        +'<div style="color:var(--ink-2);font-size:13.5px;line-height:1.5;margin-bottom:12px">Lim inn sikkerhetskopi-teksten. Spill flettes inn — nyeste versjon vinner, ingenting som allerede finnes går tapt.</div>'
+        +'<textarea id="importArea" class="sc-area" placeholder="Lim inn sikkerhetskopien her…"></textarea>'
+        +(state.importErr?'<div style="color:var(--bad);font-size:13px;margin-top:8px">'+esc(state.importErr)+'</div>':'')
+        +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button class="sc-btn sc-ghost" data-action="backup-close">Avbryt</button><button class="sc-btn sc-gold" data-action="import-do">'+ic('upload',17)+' Gjenopprett</button></div></div></div>';
     }
     if(state.editScore!==null){
       var g=currentGame();
       if(g){
         var ti=state.editScore,np=g.players.length,pl=g.players[ti%np],rd=Math.floor(ti/np)+1;
-        html+='<div class="sc-overlay"><div class="sc-card" style="width:min(380px,92vw);padding:20px">'
+        html+='<div class="sc-overlay"><div class="sc-card sc-sheet" style="width:min(360px,92vw);padding:20px">'
           +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+avatar(pl.name,COLORS[(ti%np)%COLORS.length],34)
-            +'<div><div style="font-size:12.5px;color:#8a7c69;font-weight:600">Round '+rd+' · edit score</div><div style="font-size:17px;font-weight:800">'+esc(pl.name)+'</div></div></div>'
-          +editNumpadHTML()
-          +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button class="sc-btn sc-ghost" data-action="editscore-cancel">Cancel</button><button class="sc-btn sc-gold" data-action="editscore-save">'+ic('check',17)+' Save</button></div>'
-        +'</div></div>';
+            +'<div><div style="font-size:12.5px;color:var(--ink-3);font-weight:600">Runde '+rd+' · rett poeng</div><div style="font-size:17px;font-weight:800">'+esc(pl.name)+'</div></div></div>'
+          +numpadBlock({display:editNumInput,id:'editNpDisplay',digit:'edit-np-digit',del:'edit-np-del',sign:'edit-np-sign'})
+          +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button class="sc-btn sc-ghost" data-action="editscore-cancel">Avbryt</button><button class="sc-btn sc-gold" data-action="editscore-save">'+ic('check',17)+' Lagre</button></div></div></div>';
       }
     }
     return html;
@@ -549110,41 +549243,49 @@ ZYUMYURKHACH
 
   function render(){
     var screen;
-    var page=state.view.name+'|'+state.view.id;
+    var page=state.view.name+'|'+state.view.id+'|'+state.tab;
     var fade=page!==prevPage;
     prevPage=page;
-    if(state.view.name==='home')screen=viewHome(fade);
-    else if(state.view.name==='setup')screen=viewSetup(fade);
+    if(state.view.name==='setup')screen=viewSetup(fade);
     else if(state.view.name==='game')screen=viewGame(fade);
-    else if(state.view.name==='helper')screen=viewHelper(fade);
-    else if(state.view.name==='kryss')screen=viewKryss(fade);
-    else screen=viewHome(fade);
+    else if(state.view.name==='games')screen=viewGames(fade);
+    else screen=viewTools(fade);
     app.innerHTML=screen+renderModals();
     if(state.renaming){var r=document.getElementById('renameInput');if(r){r.focus();r.select();}}
-    if(state.view.name==='helper'&&!state.helper.searched){var rk=document.getElementById('helpRack');if(rk)rk.focus();}
-    if(state.view.name==='kryss'&&!state.kryss.searched){var kp=document.getElementById('kryssPattern');if(kp)kp.focus();}
     if(state.backup==='export'){var t=document.getElementById('exportArea');if(t)t.value=state.exportText||'';}
+    // Size the game spacer to exactly clear the fixed scoring bar so all content scrolls into view.
+    var ge=document.getElementById('gameEntry'),gs=document.getElementById('gameSpacer');
+    if(ge&&gs)gs.style.height=(ge.offsetHeight+24)+'px';
   }
 
   function showToast(msg,kind){
     var layer=document.getElementById('toastLayer');
     if(!layer){layer=document.createElement('div');layer.id='toastLayer';layer.style.cssText='position:fixed;top:14px;left:0;right:0;z-index:70;';document.body.appendChild(layer);}
-    var icon=kind==='ok'?ic('check',16,{stroke:'#f6e7c4'}):ic('crown',16,{fill:'#f6e7c4',stroke:'#f6e7c4',sw:1.5});
+    var icon=kind==='lead'?ic('crown',16,{fill:'#f6e7c4',stroke:'#f6e7c4',sw:1.5}):ic('check',16,{stroke:'#f6e7c4'});
     layer.innerHTML='<div class="sc-toast">'+icon+'<span style="margin-left:6px">'+esc(msg)+'</span></div>';
     if(toastTimer)clearTimeout(toastTimer);
     toastTimer=setTimeout(function(){if(layer)layer.innerHTML='';},2600);
   }
 
-  /* ---- handlers ---- */
+  /* ==================================================================
+     HANDLERS
+     ================================================================== */
   function startSetup(){state.setup={name:'',players:[{id:uid(),name:''},{id:uid(),name:''}],hidden:false};state.view={name:'setup',id:null};render();}
-  function goHome(){state.view={name:'home',id:null};state.renaming=false;render();}
+  function goGames(){state.view={name:'games',id:null};state.renaming=false;render();}
+  function gamesBack(){state.toolsRet=null;state.view={name:'tools',id:null};render();}
   function openGame(id){numInput='';state.view={name:'game',id:id};state.renaming=false;render();}
-  function openHelper(){state.view={name:'helper',id:null};render();}
-  function helperToggleAll(){captureHelper();state.helper.useAll=!state.helper.useAll;if(state.helper.searched)helperSearch();else render();}
-  function helperToggleAdv(){captureHelper();state.helper.adv=!state.helper.adv;render();}
-  function openKryss(){state.view={name:'kryss',id:null};render();}
-  function kryssBack(){captureKryss();goHome();}
-  function kryssToggleAdv(){captureKryss();state.kryss.adv=!state.kryss.adv;render();}
+
+  function ensureCross(){var k=state.kryss;while(k.cells.length<k.count)k.cells.push('');if(k.cells.length>k.count)k.cells.length=k.count;if(k.active>=k.count)k.active=k.count-1;if(k.active<0)k.active=0;}
+  function openTools(tab,ret){state.toolsRet=ret||null;state.tab=tab||'find';if(state.tab==='find')state.helper.field='rack';ensureCross();state.view={name:'tools',id:null};render();}
+  function toolsBack(){var ret=state.toolsRet;state.view=ret?{name:ret.name,id:ret.id}:{name:'games',id:null};render();}
+  function toolsTab(tab){state.tab=tab;if(tab==='cross')ensureCross();render();}
+  function focusField(f){if(state.tab==='find')state.helper.field=f;else if(state.tab==='cross'&&f==='clue')state.kryss.focus='clue';render();}
+  function fieldClear(){var t=state.tab;if(t==='find'){var h=state.helper;h.rack='';h.starts='';h.ends='';h.contains='';h.pattern='';h.field='rack';h.results=null;h.searched=false;}else if(t==='rim'){state.rim.word='';state.rim.results=null;state.rim.searched=false;}else if(t==='lookup'){state.lookup.word='';state.lookup.result=null;}render();}
+  function helperToggleAll(){state.helper.useAll=!state.helper.useAll;if(state.helper.searched)helperSearch();else render();}
+  function helperToggleAdv(){state.helper.adv=!state.helper.adv;if(!state.helper.adv)state.helper.field='rack';render();}
+  function kryssBox(i){state.kryss.focus='cell';state.kryss.active=i;render();}
+  function kryssCount(d){var k=state.kryss;k.count=clamp(k.count+d,2,15);ensureCross();if(k.focus==='cell'&&k.active>=k.count)k.active=k.count-1;crossSearchable()?kryssSearch():render();}
+  function kryssReset(){state.kryss.clue='';state.kryss.cells=[];state.kryss.active=0;state.kryss.focus='clue';state.kryss.results=null;state.kryss.searched=false;ensureCross();render();}
 
   function captureSetup(){
     var nm=document.getElementById('setupNameInput');if(nm)state.setup.name=nm.value;
@@ -549157,132 +549298,99 @@ ZYUMYURKHACH
   function setupToggleHidden(){captureSetup();state.setup.hidden=!state.setup.hidden;render();}
   function setupStart(){
     captureSetup();
-    var players=state.setup.players.map(function(p,i){return {id:uid(),name:(p.name||'').trim()||('Player '+(i+1))};});
-    var fb='Game · '+new Date().toLocaleDateString(undefined,{day:'numeric',month:'short'});
+    var players=state.setup.players.map(function(p,i){return {id:uid(),name:(p.name||'').trim()||('Spiller '+(i+1))};});
+    var fb='Spill · '+new Date().toLocaleDateString('nb-NO',{day:'numeric',month:'short'});
     var g={id:uid(),name:(state.setup.name||'').trim()||fb,createdAt:Date.now(),updatedAt:Date.now(),players:players,scores:[],finished:false,hidden:!!state.setup.hidden};
     numInput='';state.games.unshift(g);state.view={name:'game',id:g.id};save();render();
   }
-
   function renameStart(){state.renaming=true;render();}
   function renameCommit(){var el=document.getElementById('renameInput'),g=currentGame();if(el&&g){var v=el.value.trim();if(v){g.name=v;g.updatedAt=Date.now();}}state.renaming=false;save();render();}
   function renameCancel(){state.renaming=false;render();}
-
-  function toggleHidden(){var g=currentGame();if(g&&!g.finished){g.hidden=!g.hidden;g.updatedAt=Date.now();save();render();showToast(g.hidden?'Scores hidden':'Scores shown','ok');}}
+  function toggleHidden(){var g=currentGame();if(g&&!g.finished){g.hidden=!g.hidden;g.updatedAt=Date.now();save();render();showToast(g.hidden?'Poeng skjult':'Poeng vist');}}
 
   function commitScore(points){
     var g=currentGame();if(!g||g.finished)return;
     var before=leaderInfo(g);
     g.scores.push(points);g.updatedAt=Date.now();
-    var justFilled=g.scores.length-1;
-    numInput='';
-    var playerCount=g.players.length;
-    var roundDone=g.scores.length%playerCount===0;
-    var roundNum=Math.floor(g.scores.length/playerCount);
+    var justFilled=g.scores.length-1;numInput='';
+    var playerCount=g.players.length,roundDone=g.scores.length%playerCount===0,roundNum=Math.floor(g.scores.length/playerCount);
     var after=leaderInfo(g);
     save();render();
-    // Score cell flash
     var cell=document.querySelector('[data-action="edit-cell"][data-ti="'+justFilled+'"]');
-    if(cell){
-      cell.classList.add('sc-cell-flash');
-      setTimeout(function(){if(cell)cell.classList.remove('sc-cell-flash');},450);
-    }
-    // Toasts
-    if(roundDone){
-      var msg=g.hidden?('Round '+roundNum+' done'):('Round '+roundNum+' done · '+(after.unique?g.players[after.index].name+' leads with '+after.max:'Tied at '+after.max));
-      showToast(msg,'ok');
-    } else if(!g.hidden&&after.unique&&after.max>0&&after.index!==before.index){
-      showToast(g.players[after.index].name+' takes the lead','lead');
-    }
+    if(cell){cell.classList.add('sc-cell-flash');setTimeout(function(){if(cell)cell.classList.remove('sc-cell-flash');},450);}
+    if(roundDone){showToast(g.hidden?('Runde '+roundNum+' ferdig'):('Runde '+roundNum+' ferdig · '+(after.unique?g.players[after.index].name+' leder med '+after.max:'uavgjort på '+after.max)));}
+    else if(!g.hidden&&after.unique&&after.max>0&&after.index!==before.index){showToast(g.players[after.index].name+' tar ledelsen','lead');}
   }
-  function addScore(){
-    if(navigator.vibrate)navigator.vibrate(15);
-    var v=parseInt(numInput,10);if(isNaN(v))return;commitScore(v);
-  }
-  function passScore(){
-    if(navigator.vibrate)navigator.vibrate(15);
-    numInput='';commitScore(0);
-  }
+  function addScore(){buzz(15);var v=parseInt(numInput,10);if(isNaN(v))return;commitScore(v);}
+  function passScore(){buzz(15);numInput='';commitScore(0);}
   function undoLast(){var g=currentGame();if(g&&g.scores.length){g.scores.pop();g.updatedAt=Date.now();numInput='';save();render();}}
-
-  function openEditScore(ti){
-    var g=currentGame();
-    if(g&&g.scores[ti]!==undefined){
-      var v=g.scores[ti];
-      editNumInput=v===0?'':String(v);
-    } else {
-      editNumInput='';
-    }
-    state.editScore=ti;render();
-  }
-  function editScoreSave(){
-    var g=currentGame();
-    if(g&&state.editScore!==null){
-      var v=parseInt(editNumInput,10);
-      if(!isNaN(v)){g.scores[state.editScore]=v;g.updatedAt=Date.now();}
-    }
-    state.editScore=null;save();render();
-  }
+  function openEditScore(ti){var g=currentGame();if(g&&g.scores[ti]!==undefined){var v=g.scores[ti];editNumInput=v===0?'':String(v);}else{editNumInput='';}state.editScore=ti;render();}
+  function editScoreSave(){var g=currentGame();if(g&&state.editScore!==null){var v=parseInt(editNumInput,10);if(!isNaN(v)){g.scores[state.editScore]=v;g.updatedAt=Date.now();}}state.editScore=null;save();render();}
   function closeEditScore(){state.editScore=null;render();}
-
-  function confirmEnd(){state.modal={title:'End the game?',body:'Totals are locked in and a winner is crowned. You can reopen it later.',confirm:'End game',danger:false,onYes:endGame};render();}
+  function confirmEnd(){state.modal={title:'Avslutte spillet?',body:'Totalsummene låses og en vinner kåres. Du kan gjenåpne det senere.',confirm:'Avslutt spill',danger:false,onYes:endGame};render();}
   function endGame(){var g=currentGame();if(g){g.finished=true;g.updatedAt=Date.now();}state.modal=null;save();render();}
   function reopenGame(){var g=currentGame();if(g){g.finished=false;g.updatedAt=Date.now();}save();render();}
-
-  function confirmDelete(id,name){state.modal={title:'Delete this game?',body:'"'+name+'" and its scores will be removed for good.',confirm:'Delete',danger:true,onYes:function(){doDelete(id);}};render();}
-  function doDelete(id){state.games=state.games.filter(function(g){return g.id!==id;});if(state.view.id===id)state.view={name:'home',id:null};state.modal=null;save();render();}
+  function confirmDelete(id,name){state.modal={title:'Slette dette spillet?',body:'«'+name+'» og alle poeng fjernes for godt.',confirm:'Slett',danger:true,onYes:function(){doDelete(id);}};render();}
+  function doDelete(id){state.games=state.games.filter(function(g){return g.id!==id;});if(state.view.id===id)state.view={name:'games',id:null};state.modal=null;save();render();}
   function closeModal(){state.modal=null;render();}
-
   function openExport(){state.exportText=buildExport(state.games);state.backup='export';render();}
   function openImport(){state.backup='import';state.importErr='';render();}
   function closeBackup(){state.backup=null;state.importErr='';render();}
   function exportCopy(){
     var text=state.exportText||'';
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){showToast('Backup copied','ok');}).catch(function(){var t=document.getElementById('exportArea');if(t){t.focus();t.select();}showToast('Select all and copy','lead');});
-    } else {var t=document.getElementById('exportArea');if(t){t.focus();t.select();}showToast('Select all and copy','lead');}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){showToast('Kopi lagret på utklippstavlen');}).catch(function(){var t=document.getElementById('exportArea');if(t){t.focus();t.select();}showToast('Merk alt og kopier','lead');});}
+    else{var t=document.getElementById('exportArea');if(t){t.focus();t.select();}showToast('Merk alt og kopier','lead');}
   }
   function importDo(){
     var el=document.getElementById('importArea');if(!el)return;
-    var parsed;try{parsed=JSON.parse(el.value);}catch(e){state.importErr='That doesn’t look like valid backup text. Paste the whole thing you copied.';render();return;}
+    var parsed;try{parsed=JSON.parse(el.value);}catch(e){state.importErr='Dette ser ikke ut som gyldig sikkerhetskopi. Lim inn hele teksten du kopierte.';render();return;}
     var incoming=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.games)?parsed.games:null);
-    if(!incoming){state.importErr='Couldn’t find any games in that text.';render();return;}
+    if(!incoming){state.importErr='Fant ingen spill i den teksten.';render();return;}
     var valid=incoming.filter(function(g){return g&&typeof g.id==='string'&&Array.isArray(g.players)&&Array.isArray(g.scores);});
-    if(!valid.length){state.importErr='No valid games found in that text.';render();return;}
-    state.games=mergeGames(state.games,valid);state.backup=null;state.importErr='';save();render();
-    showToast('Restored '+valid.length+' game'+(valid.length>1?'s':''),'ok');
+    if(!valid.length){state.importErr='Fant ingen gyldige spill i teksten.';render();return;}
+    state.games=mergeGames(state.games,valid);state.backup=null;state.importErr='';save();render();showToast('Gjenopprettet '+valid.length+' spill');
   }
-
   function closeTop(){if(state.editScore!==null)state.editScore=null;else if(state.backup){state.backup=null;state.importErr='';}else if(state.modal)state.modal=null;render();}
 
-  /* ---- events ---- */
+  /* ==================================================================
+     EVENTS
+     ================================================================== */
   app.addEventListener('click',function(e){
     if(e.target.classList&&e.target.classList.contains('sc-overlay')){closeTop();return;}
     var el=e.target.closest('[data-action]');if(!el)return;
     var a=el.getAttribute('data-action');
     switch(a){
       case 'new-game':startSetup();break;
-      case 'go-home':goHome();break;
-      case 'open-helper':openHelper();break;
-      case 'helper-back':captureHelper();goHome();break;
-      case 'helper-search':helperSearch();break;
+      case 'go-home':goGames();break;
+      case 'open-games':goGames();break;
+      case 'games-back':gamesBack();break;
+      case 'open-tools-game':openTools('lookup',{name:'game',id:state.view.id});break;
+      case 'tools-back':toolsBack();break;
+      case 'tools-tab':toolsTab(el.getAttribute('data-tab'));break;
+      case 'cycle-theme':cycleTheme();break;
+      case 'rim-sort':rimSort(el.getAttribute('data-m'));break;
+      case 'focus-field':focusField(el.getAttribute('data-f'));break;
+      case 'field-clear':fieldClear();break;
+      case 'kb-key':kbKey(el.getAttribute('data-k'));break;
+      case 'kb-back':kbBack();break;
+      case 'kb-blank':kbBlank();break;
+      case 'kb-wild':kbWild();break;
+      case 'kb-go':kbGo();break;
       case 'helper-toggle-all':helperToggleAll();break;
       case 'helper-toggle-adv':helperToggleAdv();break;
-      case 'open-kryss':openKryss();break;
-      case 'kryss-back':kryssBack();break;
-      case 'kryss-search':kryssSearch();break;
-      case 'kryss-toggle-adv':kryssToggleAdv();break;
-      case 'lookup-toggle':toggleLookup();break;
-      case 'lookup-do':doLookup();break;
+      case 'kryss-box':kryssBox(+el.getAttribute('data-i'));break;
+      case 'kryss-count':kryssCount(+el.getAttribute('data-d'));break;
+      case 'kryss-reset':kryssReset();break;
       case 'open-game':openGame(el.getAttribute('data-id'));break;
       case 'export-open':openExport();break;
       case 'import-open':openImport();break;
-      case 'delete-game':confirmDelete(el.getAttribute('data-id'),el.getAttribute('data-name')||'this game');break;
+      case 'delete-game':confirmDelete(el.getAttribute('data-id'),el.getAttribute('data-name')||'dette spillet');break;
       case 'setup-add':setupAdd();break;
       case 'setup-remove':setupRemove(+el.getAttribute('data-i'));break;
       case 'setup-move':setupMove(+el.getAttribute('data-i'),+el.getAttribute('data-dir'));break;
       case 'setup-toggle-hidden':setupToggleHidden();break;
       case 'setup-start':setupStart();break;
-      case 'setup-back':captureSetup();goHome();break;
+      case 'setup-back':captureSetup();goGames();break;
       case 'rename-start':renameStart();break;
       case 'rename-commit':renameCommit();break;
       case 'rename-cancel':renameCancel();break;
@@ -549294,7 +549402,6 @@ ZYUMYURKHACH
       case 'score-pass':passScore();break;
       case 'score-undo':undoLast();break;
       case 'edit-cell':openEditScore(+el.getAttribute('data-ti'));break;
-      case 'focus-entry':break;
       case 'end-game':confirmEnd();break;
       case 'reopen-game':reopenGame();break;
       case 'modal-cancel':closeModal();break;
@@ -549310,11 +549417,7 @@ ZYUMYURKHACH
     }
   });
   document.addEventListener('keydown',function(e){
-    if(state.renaming){
-      var r=document.getElementById('renameInput');
-      if(e.target===r){if(e.key==='Enter'){e.preventDefault();renameCommit();}else if(e.key==='Escape'){renameCancel();}}
-      return;
-    }
+    if(state.renaming){var r=document.getElementById('renameInput');if(e.target===r){if(e.key==='Enter'){e.preventDefault();renameCommit();}else if(e.key==='Escape'){renameCancel();}}return;}
     if(state.editScore!==null){
       if(e.key>='0'&&e.key<='9'){e.preventDefault();editNpDigit(e.key);}
       else if(e.key==='-'){e.preventDefault();editNpSign();}
@@ -549323,21 +549426,18 @@ ZYUMYURKHACH
       else if(e.key==='Escape'){closeEditScore();}
       return;
     }
-    if(state.view.name==='helper'){
-      if(e.key==='Enter'){e.preventDefault();helperSearch();}
-      return;
-    }
-    if(state.view.name==='kryss'){
-      if(e.key==='Enter'){e.preventDefault();kryssSearch();}
+    if(state.view.name==='tools'){
+      var t=e.target,tag=t&&t.tagName;if(tag==='INPUT'||tag==='TEXTAREA')return;
+      var K=e.key;
+      if(K==='Enter'){e.preventDefault();kbGo();}
+      else if(K==='Backspace'){e.preventDefault();kbBack();}
+      else if(K==='?'&&state.tab==='find'){e.preventDefault();kbBlank();}
+      else if(K==='.'&&state.tab==='find'){e.preventDefault();kbWild();}
+      else if(K.length===1){var up=K.toUpperCase();if(LETTER_RE.test(up)){e.preventDefault();kbKey(up);}}
       return;
     }
     if(state.view.name==='game'&&currentGame()&&!currentGame().finished){
-      // don't let the numpad hijack keys while typing in a text field (e.g. word lookup)
-      var t=e.target,tag=t&&t.tagName;
-      if(tag==='INPUT'||tag==='TEXTAREA'){
-        if(t.id==='lookupInput'&&e.key==='Enter'){e.preventDefault();doLookup();}
-        return;
-      }
+      var tg=e.target,tn=tg&&tg.tagName;if(tn==='INPUT'||tn==='TEXTAREA')return;
       if(e.key>='0'&&e.key<='9'){npDigit(e.key);}
       else if(e.key==='-'){npSign();}
       else if(e.key==='Backspace'){e.preventDefault();npDel();}
@@ -549345,21 +549445,13 @@ ZYUMYURKHACH
     }
   });
 
-  // Disable all zooming on touch devices (pinch, double-tap, gesture)
-  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){
-    document.addEventListener(ev,function(e){e.preventDefault();},{passive:false});
-  });
-  document.addEventListener('touchmove',function(e){
-    if(e.touches.length>1){e.preventDefault();}
-  },{passive:false});
+  // Disable zoom on touch (pinch, double-tap, gesture)
+  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){document.addEventListener(ev,function(e){e.preventDefault();},{passive:false});});
+  document.addEventListener('touchmove',function(e){if(e.touches.length>1){e.preventDefault();}},{passive:false});
   var lastTouchEnd=0;
-  document.addEventListener('touchend',function(e){
-    var now=e.timeStamp||0;
-    if(now-lastTouchEnd<=300){e.preventDefault();}
-    lastTouchEnd=now;
-  },{passive:false});
+  document.addEventListener('touchend',function(e){var now=e.timeStamp||0;var tt=e.target;var interactive=tt&&tt.closest&&tt.closest('button,a,input,textarea,[data-action]');if(!interactive&&now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
 
-  load();render();
+  loadTheme();applyTheme();load();render();
 })();
 </script>
 </body>
