@@ -5,6 +5,10 @@ datakilder vi lovlig kan bruke for å forbedre kryssordboka i appen.
 
 Dato: 2026-07-12
 
+> **Status:** Alle tre anbefalte åpne datakildene (Wikidata, ConceptNet,
+> Bokmålsordboka-definisjoner) er nå **implementert** og bygget inn i appen.
+> Se seksjon 8.
+
 ---
 
 ## 1. Sammendrag (TL;DR)
@@ -187,20 +191,64 @@ lenker, slik appen allerede gjør.)
 
 ## 6. Anbefalt plan
 
-1. **Wikidata-basert ledetråd→svar-indeks (CC0).** Definér ~30–50
-   kryssord-relevante kategorier, kjør SPARQL, generér norske ledetråd→svar-par,
-   komprimér og bygg inn som ny `SCRABBLE_KRYSS`-blokk. Størst effekt, null
-   lisensrisiko.
-2. **Utvid Ordvev-uttrekket** til flere relasjoner (rask gevinst på data vi
-   allerede har innbygd).
-3. **Lemmatisering + fuzzy ledetråd-match** (ren kode, ingen ny data).
-4. **Vurdér ConceptNet/definisjons-indeks** som fase 2 – men avklar
-   CC-BY-SA/share-alike-konsekvensen for distribusjonen først.
-5. **Ikke skrap** kryssord.org / gratiskryssord.no / kryssord.no.
+1. ~~**Wikidata-basert ledetråd→svar-indeks (CC0).**~~ ✅ Implementert (seksjon 7).
+2. ~~**ConceptNet-indeks (CC-BY-SA).**~~ ✅ Implementert (seksjon 7).
+3. ~~**Bokmålsordboka-definisjoner (CC-BY).**~~ ✅ Implementert som genus-uttrekk (seksjon 7).
+4. **Ikke skrap** kryssord.org / gratiskryssord.no / kryssord.no.
+
+Gjenstår som mulige forbedringer senere:
+- Lemmatisering + fuzzy ledetråd-match (ren kode, ingen ny data).
+- Rydde i restnøyaktighet (f.eks. HOVEDSTAD har noen land-oppføringer, BLOMST
+  har noen nyttevekster fra Wikidata).
 
 ---
 
-## 7. Kilder
+## 7. Implementert (kryss-nob-1.0)
+
+Alle tre kildene er høstet fra åpne data, slått sammen til én kompakt blokk
+(`window.SCRABBLE_KRYSS`, samme vokab/base36-format som `SCRABBLE_SYNVEV`) og
+koblet inn i ledetråd-modusen. Alt kjører **lokalt/offline** i appen — ingen
+nettverkskall ved oppslag.
+
+**Datamengde (ledetråd → svar):**
+
+| Kilde | Lisens | Nøkler | Par | Eksempel |
+|---|---|---|---|---|
+| Wikidata | CC0 | 236 | 5 913 | ELV→NILEN, DONAU · GRUNNSTOFF→GULL, JERN · HOVEDSTAD→PARIS |
+| ConceptNet 5.7 | CC-BY-SA 4.0 | 18 906 | 39 252 | KONGE→DRONNING · HAV→SJØ |
+| Bokmålsordboka (genus) | CC-BY 4.0 | 19 993 | 95 158 | REDSKAP→ØKS, SAG · FUGL→MÅKE, DUE · INSEKT→BIE, VEPS |
+
+Til sammenligning hadde den gamle ledetråd-modusen kun ~15 500 nøkler (Ordvev
+alene) og ingen encyklopediske egennavn. Nå: **~39 000 nøkler** + fakta.
+
+**Slik er det bygget:**
+- **Wikidata:** ~30 SPARQL-spørringer mot kryssord-relevante kategorier
+  (grunnstoff, hovedstad, elv, fjell, innsjø, kommune, land, fugl, farge,
+  bilmerke, valuta, mytologi, yrke m.fl.), notabilitets-sortert (sitelinks) og
+  cappet. Egennavn (OSLO, GLOMMA, IBSEN …) som ordbøker aldri har.
+- **ConceptNet:** dumpen (`conceptnet-assertions-5.7.0`) filtrert til norske
+  `/c/no/`-kanter, relasjonene Synonym/RelatedTo/SimilarTo/IsA/Antonym, bygget
+  toveis clue↔svar.
+- **Bokmålsordboka:** ~62 000 artikler hentet fra `ord.uib.no`, og **genus**
+  (den definerende kategorien først i forklaringen) trukket ut → «ord som ER en
+  slags X». Langt mer presist enn en full omvendt definisjonsindeks.
+
+**UI:** Ledetråd-treff vises nå i seksjonene *Synonymer · Fakta · Eksempler ·
+Beslektede ord · Fra ordboka*, deduplisert etter presisjon og filtrert av
+mønster/lengde. Kildekreditering står i bunnteksten på Kryssordbok-siden.
+
+**Kostnad:** `index.html` vokser ~1,5 MB (3,4 → ~5,0 MB) for den innebygde
+blokken — akseptabelt for en offline-app som allerede har Ordbank/Ordvev
+innebygd.
+
+**Lisens-obs:** ConceptNet er CC-BY-SA 4.0 (share-alike). Kildene er kreditert i
+appen; ved videre distribusjon bør ConceptNet-avledet innhold deles under
+kompatible vilkår. Wikidata (CC0) og Bokmålsordboka (CC-BY) har ikke share-alike.
+
+**Verifisert:** end-to-end i Chromium (Playwright) — 9/9 søk grønne, ingen
+konsollfeil; mønsterfilter bekreftet (ELV + `D....` → DONAU, ikke NILEN).
+
+## 8. Kilder
 
 - Norsk Ordbank (CC-BY): https://www.nb.no/sprakbanken/en/resource-catalogue/oai-nb-no-sbr-5/
 - Ordbøkene / nyttige ressurser: https://ordbokene.no/nob/about/useful-links
