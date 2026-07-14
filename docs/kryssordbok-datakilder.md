@@ -3,11 +3,13 @@
 Dyp analyse av tre norske kryssord-nettsteder og en gjennomgang av hvilke
 datakilder vi lovlig kan bruke for å forbedre kryssordboka i appen.
 
-Dato: 2026-07-12
+Dato: 2026-07-12 · oppdatert 2026-07-14
 
 > **Status:** Alle tre anbefalte åpne datakildene (Wikidata, ConceptNet,
-> Bokmålsordboka-definisjoner) er nå **implementert** og bygget inn i appen.
-> Se seksjon 8.
+> Bokmålsordboka-definisjoner) er **implementert** og bygget inn i appen (seksjon 7).
+> Etter tilbakemelding om at søket fortsatt var svakt (f.eks. «Demre» ga ingen
+> treff) er hovedstad-dataene ryddet opp, en generell by/øy-kategori lagt til,
+> og søket gjort **toveis** (omvendt oppslag) — se seksjon 8.
 
 ---
 
@@ -248,7 +250,71 @@ kompatible vilkår. Wikidata (CC0) og Bokmålsordboka (CC-BY) har ikke share-ali
 **Verifisert:** end-to-end i Chromium (Playwright) — 9/9 søk grønne, ingen
 konsollfeil; mønsterfilter bekreftet (ELV + `D....` → DONAU, ikke NILEN).
 
-## 8. Kilder
+---
+
+## 8. Iterasjon 2 (kryss-nob-1.1) — svar på «fortsatt dårlig, f.eks. Demre»
+
+**Tilbakemelding:** Søk på **Demre** (tyrkisk by, kjent fra kryssord om
+julenissens opphav) ga ingen brukbare treff, mens gratiskryssord.no viser 34
+synonymer for samme ord. To reelle bugs/hull lå bak dette:
+
+1. **`HOVEDSTAD`-nøkkelen var i praksis ødelagt.** Wikidata-innhøstingen hadde
+   gruppert hovedsteder etter *hvilken statsdannelse* de var hovedstad i, ikke
+   bare «hovedstad» generelt. Resultatet: 183 av 236 wd-nøkler var søppel som
+   ingen noensinne ville søkt på (`HOVEDSTADIDENFØRSTEFRANSKEREPUBLIKK`,
+   `HOVEDSTADIDETTYSKROMERSKERIKE` …), og den rene `HOVEDSTAD`-nøkkelen hadde
+   kun 23 svar — de fleste av verdens hovedsteder manglet helt. Disse 183
+   søppelnøklene er fjernet; svarene deres (20 unike byer) er slått sammen inn
+   i en ny, komplett `HOVEDSTAD`-liste bygget fra `?land wdt:P36 ?hovedstad`
+   (203 hovedsteder).
+2. **Ingen generell «by»-kategori fantes.** Ledetråd-modus dekket kun
+   hovedsteder, elver, fjell osv. — aldri vanlige (uten-hovedstad) byer og
+   tettsteder. Det er nettopp denne kategorien Demre hører til. Lagt til:
+   - **`BY`** — 7 720 byer/tettsteder verden over med norsk (nb) Wikidata-etikett
+     (`wdt:P31` city/town).
+   - **111 land-spesifikke nøkler** (`BYITYRKIA`, `BYISTORBRITANNIA`,
+     `BYIDANMARK` …) for land med ≥10 treff — matcher hvordan en ekte
+     kryssord-ledetråd faktisk er formulert («by i Tyrkia»).
+   - **`ØY`** — 2 998 øyer (`wdt:P31` island).
+3. **Søket var kun ettveis.** Selv med Demre i `BY`/`BYITYRKIA`, ville et søk
+   på ordet **Demre** likevel gitt null treff — ledetråd-modus slo bare opp
+   *kategori → medlemmer* (skriv «ELV», få elvenavn), aldri omvendt. Ekte
+   kryssord-synonymordbøker (som gratiskryssord.no) er derimot symmetriske: du
+   kan søke på et hvilket som helst ord og få relaterte ord tilbake, uansett om
+   det ordet «egentlig» er en kategori eller et konkret svar. Lagt til et
+   **omvendt register** (`buildRev()` i `index.html`): slår et søkeord opp som
+   *svar* i alle fem tabellene (Ordvev-synonymer/-kategorier, Wikidata,
+   ConceptNet, Bokmålsordboka), og viser søskenordene i kategorien(e) det
+   tilhører under en ny seksjon «X finnes i samme kategori som». Søk på
+   **Demre** gir nå 120 relaterte bynavn (fra `BY`/`BYITYRKIA`) i tillegg til
+   ett ordboksmatch (`MORGNE`, via den norske verbformen «demre»/«å demre»).
+
+**Datamengde etter opprydding (wd-delen):**
+
+| Nøkkel | Kilde | Antall svar | Eksempel |
+|---|---|---|---|
+| `HOVEDSTAD` | Wikidata (`P36`) | 203 (var 23 + 183 søppelnøkler) | OSLO, PARIS, ANKARA, TOKYO … |
+| `BY` | Wikidata (city/town) | 7 720 | DEMRE, BERGEN, PARMA … |
+| `BYI<LAND>` (111 nøkler) | Wikidata (city + `P17`) | ~7 700 (fordelt) | `BYITYRKIA` → DEMRE, ANTALYA … |
+| `ØY` | Wikidata (island) | 2 998 | KRETA, MADAGASKAR … |
+
+wd-delen totalt: 236 → **166 nøkler** (søppel fjernet), **5 913 → 24 092 par**.
+Filstørrelse: `index.html` vokser fra ~5,0 til **~5,2 MB**.
+
+**Grensen som gjenstår:** Wikidata/ConceptNet/Bokmålsordboka gir oss
+*taksonomi* (Demre er en by i Tyrkia), ikke *kryssord-trivia*
+(Demre = julenissens fødeby/Myra). Den slags assosiative kunnskap finnes kun i
+ekte, redaksjonelt kuraterte kryssord-arkiv (kryssord.org, gratiskryssord.no) —
+som vi (fortsatt, se seksjon 4) ikke kan skrape lovlig. Omvendt-registeret
+tetter mye av gapet for *stedsnavn/kategori-medlemskap*, men vil aldri fange
+opp kulturelle/historiske snarveier en kryssordredaktør bruker som ledetekst.
+Forvent fortsatt enkelte «kjendis-ledetråder» uten treff.
+
+**Verifisert:** simulert avkoding + reelt Chromium-søk (Playwright) på Demre,
+Elv, Hovedstad, By, Redskap — ingen konsollfeil, ingen regresjon på
+eksisterende nøkler.
+
+## 9. Kilder
 
 - Norsk Ordbank (CC-BY): https://www.nb.no/sprakbanken/en/resource-catalogue/oai-nb-no-sbr-5/
 - Ordbøkene / nyttige ressurser: https://ordbokene.no/nob/about/useful-links
